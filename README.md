@@ -10,15 +10,16 @@ characteristics are accounted for? This project builds a county panel from publi
 the question with unsupervised and supervised models.
 
 **Finding.** The supervised analysis finds at most a small, borderline association that does not
-survive adjustment for a county's own prior outcomes; details and caveats are in `04_supervised_learning`.
+survive adjustment for a county's own prior outcomes; details and caveats are in
+[`04_supervised_learning`](notebooks/04_supervised_learning.ipynb).
 
 ## Notebooks
 
-1. `01_loading_data`: load and explore the raw CMS files
-2. `02_zip_county_crosswalk`: map physician groups to counties and build the analytic table
-3. `03_unsupervised_learning`: PCA and clustering on county MIPS profiles
-4. `04_supervised_learning`: does MIPS predict county outcomes beyond demographics?
-5. `05_supervised_learning_extensions`: population weighting and PCA robustness checks
+1. [`01_loading_data`](notebooks/01_loading_data.ipynb): load and explore the raw CMS files
+2. [`02_zip_county_crosswalk`](notebooks/02_zip_county_crosswalk.ipynb): map physician groups to counties and build the analytic table
+3. [`03_unsupervised_learning`](notebooks/03_unsupervised_learning.ipynb): PCA and clustering on county MIPS profiles
+4. [`04_supervised_learning`](notebooks/04_supervised_learning.ipynb): does MIPS predict county outcomes beyond demographics?
+5. [`05_supervised_learning_extensions`](notebooks/05_supervised_learning_extensions.ipynb): population weighting and PCA robustness checks
 
 ## Setup
 
@@ -50,7 +51,7 @@ Notebook 04 also downloads US county boundaries (county FIPS GeoJSON) automatica
 ```
 data/         the pinned manifest (raw and processed data are gitignored)
 notebooks/    the analysis pipeline
-reports/      figures and outputs
+reports/      figures
 requirements.txt
 ```
 

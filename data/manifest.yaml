@@ -38,16 +38,15 @@ datasets:
     expected_rows: 36994   # National+State+County x 3 age levels x 2014-2024; filter BENE_GEO_LVL==County
     note: "Join key BENE_GEO_CD = county FIPS stored as int (zfill(5)). Outcomes: PQI0x_* preventable admissions, ACUTE_HOSP_READMSN_PCT, *_PER_1000_BENES. Controls: BENE_AVG_AGE, race %, BENE_DUAL_PCT."
 
-  - name: county_preventable_admissions
-    description: County Health Rankings "Preventable Hospital Stays" (v005) - AHRQ PQI/ambulatory-care-sensitive admissions per 100k Medicare FFS. Explored early; NOT used by the supervised notebooks, which model ACUTE_HOSP_READMSN_PCT from the geo file.
-    dataset_id: "chr-analytic-2025"
-    landing: https://www.countyhealthrankings.org/health-data/methodology-and-sources/data-documentation
-    url: https://www.countyhealthrankings.org/sites/default/files/media/document/analytic_data2025_v3.csv
+  - name: zip_to_county_crosswalk
+    description: HUD USPS ZIP to county crosswalk. Maps physician group ZIPs to counties (tot_ratio address allocation) for the county rollup.
+    landing: https://www.huduser.gov/portal/datasets/usps_crosswalk.html
+    url: ""   # HUD requires selecting the ZIP-COUNTY crosswalk and a quarter on the landing page; no stable direct URL
     fallback_url: ""
-    target: chr_analytic_2025.csv
-    sha256: "5a129b856489fe6646013d7fcf85397dd576f6d67a65f5db72738a1df29643de"
-    expected_rows: 3204
-    note: "Read with skip_rows=1 (line 1 = human labels, line 2 = machine names). Outcome col = v005_rawvalue. County rows = countycode != '000'. Join on fipscode (5-digit). ~97.4% county coverage. 2025 file = 2022 data year; for MIPS PY2023 alignment use the 2023 supplemental release. Non-commercial license, cite CHR&R."
+    target: ZIP-COUNTY.csv
+    sha256: "5ab4ff5e3ea858da2daba0806736af0297ffc77ed4216f037c092543b88cd523"
+    expected_rows: 54562
+    note: "Columns used: zip, geoid (county FIPS), tot_ratio. Download the ZIP-COUNTY crosswalk from the HUD landing page (select a quarter)."
 
 # Team-generated artifacts (from shared Drive; not raw sources).
 # Pinned here so everyone can confirm they model on the same bytes.
