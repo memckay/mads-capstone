@@ -17,7 +17,7 @@ datasets:
     expected_rows: 199228   # PY2023 Group Public Reporting, CMS snapshot modified 2025-11-18
 
   - name: dac_group_to_zip
-    description: Doctors & Clinicians national file: links PAC IDs to ZIP / specialty.
+    description: "Doctors & Clinicians national file: links PAC IDs to ZIP / specialty."
     dataset_id: "mj5m-pzi6"
     landing: https://data.cms.gov/provider-data/dataset/mj5m-pzi6
     url: https://data.cms.gov/provider-data/sites/default/files/resources/52c3f098d7e56028a298fd297cb0b38d_1780085742/DAC_NationalDownloadableFile.csv
@@ -28,7 +28,7 @@ datasets:
     note: "Do NOT open in Excel: it silently truncates to 1,048,575 rows and strips leading zeros from ZIP/PAC IDs. Verified clean 2026-07-15: 31 cols, ZIP lengths only 5/9, all PAC IDs 10-digit. CMS rotates resource URLs on refresh, so url above may point to an older snapshot; the shared Drive copy is canonical."
 
   - name: county_outcomes_geo_variation
-    description: Medicare Geographic Variation by National/State/County: the outcome measures (2014-2024 PUF).
+    description: "Medicare Geographic Variation by National/State/County: the outcome measures (2014-2024 PUF)."
     dataset_id: "6219697b-8f6c-4164-bed4-cd9317c58ebc"
     landing: https://data.cms.gov/summary-statistics-on-use-and-payments/medicare-geographic-comparisons/medicare-geographic-variation-by-national-state-county
     url: https://data.cms.gov/sites/default/files/2026-04/cc600d1e-d475-4b0e-80dc-1f64c01ca68c/2014-2024%20Original%20Medicare%20Geographic%20Variation%20Public%20Use%20File.csv
