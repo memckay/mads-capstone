@@ -33,7 +33,7 @@ datasets:
     landing: https://data.cms.gov/summary-statistics-on-use-and-payments/medicare-geographic-comparisons/medicare-geographic-variation-by-national-state-county
     url: https://data.cms.gov/sites/default/files/2026-04/cc600d1e-d475-4b0e-80dc-1f64c01ca68c/2014-2024%20Original%20Medicare%20Geographic%20Variation%20Public%20Use%20File.csv
     fallback_url: ""
-    target: geo_variation_county.csv
+    target: "2014-2024 Original Medicare Geographic Variation Public Use File.csv"
     sha256: "10c8304012da34da3ecfe4caf4548927095f693383814d0e79ce6711b6806fad"
     expected_rows: 36994   # National+State+County x 3 age levels x 2014-2024; filter BENE_GEO_LVL==County
     note: "Join key BENE_GEO_CD = county FIPS stored as int (zfill(5)). Outcomes: PQI0x_* preventable admissions, ACUTE_HOSP_READMSN_PCT, *_PER_1000_BENES. Controls: BENE_AVG_AGE, race %, BENE_DUAL_PCT."
