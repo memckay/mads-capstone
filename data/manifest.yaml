@@ -1,0 +1,67 @@
+# Pinned data sources for Healthcare Heroes (SIADS 699).
+# Goal: everyone pulls byte-identical data so results reproduce.
+#
+# Raw files live in data/raw/ (gitignored). Download each dataset from its url
+# below into data/raw/ under the listed target filename, then confirm the sha256
+# and row count match the values recorded here. This is the reproducibility gate.
+
+datasets:
+  - name: group_mips_performance
+    description: Physician-group MIPS measure performance (performance rate, star value).
+    dataset_id: "0ba7-2cb0"
+    landing: https://data.cms.gov/provider-data/dataset/0ba7-2cb0
+    url: https://data.cms.gov/provider-data/sites/default/files/resources/aaa9711048714dfc052c965a4e02a2f9_1763510758/grp_public_reporting.csv
+    fallback_url: ""   # optional: shared Google Drive direct-download link (frozen snapshot)
+    target: grp_public_reporting.csv
+    sha256: "ae983295f8fc994ac535351f7901b2d38d3b74c20978969fff0bbdc85dd59315"
+    expected_rows: 199228   # PY2023 Group Public Reporting, CMS snapshot modified 2025-11-18
+
+  - name: dac_group_to_zip
+    description: Doctors & Clinicians national file: links PAC IDs to ZIP / specialty.
+    dataset_id: "mj5m-pzi6"
+    landing: https://data.cms.gov/provider-data/dataset/mj5m-pzi6
+    url: https://data.cms.gov/provider-data/sites/default/files/resources/52c3f098d7e56028a298fd297cb0b38d_1780085742/DAC_NationalDownloadableFile.csv
+    fallback_url: ""
+    target: DAC_NationalDownloadableFile.csv
+    sha256: "8448857a9edf81eee70754e98967be06b3e24c8d3d30e15371f117ec116d063c"
+    expected_rows: 3387942   # team-canonical snapshot, pulled from shared Drive 2026-07-15 (CMS refresh after 2026-05-29)
+    note: "Do NOT open in Excel: it silently truncates to 1,048,575 rows and strips leading zeros from ZIP/PAC IDs. Verified clean 2026-07-15: 31 cols, ZIP lengths only 5/9, all PAC IDs 10-digit. CMS rotates resource URLs on refresh, so url above may point to an older snapshot; the shared Drive copy is canonical."
+
+  - name: county_outcomes_geo_variation
+    description: Medicare Geographic Variation by National/State/County: the outcome measures (2014-2024 PUF).
+    dataset_id: "6219697b-8f6c-4164-bed4-cd9317c58ebc"
+    landing: https://data.cms.gov/summary-statistics-on-use-and-payments/medicare-geographic-comparisons/medicare-geographic-variation-by-national-state-county
+    url: https://data.cms.gov/sites/default/files/2026-04/cc600d1e-d475-4b0e-80dc-1f64c01ca68c/2014-2024%20Original%20Medicare%20Geographic%20Variation%20Public%20Use%20File.csv
+    fallback_url: ""
+    target: geo_variation_county.csv
+    sha256: "10c8304012da34da3ecfe4caf4548927095f693383814d0e79ce6711b6806fad"
+    expected_rows: 36994   # National+State+County x 3 age levels x 2014-2024; filter BENE_GEO_LVL==County
+    note: "Join key BENE_GEO_CD = county FIPS stored as int (zfill(5)). Outcomes: PQI0x_* preventable admissions, ACUTE_HOSP_READMSN_PCT, *_PER_1000_BENES. Controls: BENE_AVG_AGE, race %, BENE_DUAL_PCT."
+
+  - name: county_preventable_admissions
+    description: County Health Rankings "Preventable Hospital Stays" (v005) - AHRQ PQI/ambulatory-care-sensitive admissions per 100k Medicare FFS. Explored early; NOT used by the supervised notebooks, which model ACUTE_HOSP_READMSN_PCT from the geo file.
+    dataset_id: "chr-analytic-2025"
+    landing: https://www.countyhealthrankings.org/health-data/methodology-and-sources/data-documentation
+    url: https://www.countyhealthrankings.org/sites/default/files/media/document/analytic_data2025_v3.csv
+    fallback_url: ""
+    target: chr_analytic_2025.csv
+    sha256: "5a129b856489fe6646013d7fcf85397dd576f6d67a65f5db72738a1df29643de"
+    expected_rows: 3204
+    note: "Read with skip_rows=1 (line 1 = human labels, line 2 = machine names). Outcome col = v005_rawvalue. County rows = countycode != '000'. Join on fipscode (5-digit). ~97.4% county coverage. 2025 file = 2022 data year; for MIPS PY2023 alignment use the 2023 supplemental release. Non-commercial license, cite CHR&R."
+
+# Team-generated artifacts (from shared Drive; not raw sources).
+# Pinned here so everyone can confirm they model on the same bytes.
+team_artifacts:
+  - name: analytic_measure
+    description: County x measure modeling table (geo county outcomes joined to county-aggregated MIPS). Built by the 02_zip_county_crosswalk notebook from the 2026-07-15 raw snapshot set.
+    target: processed/analytic_measure.csv.gz
+    sha256: "17ad5e1f1085138a035de0bc6a9bc5d74f8c61948555f8087e96d06253f462d2"
+    expected_rows: 1611053   # x 255 cols; filter YEAR==2023 before modeling
+    note: "county_fips is 5-digit zero-padded text here. Downloaded from shared Drive 2026-07-15."
+
+  - name: county_clusters
+    description: KMeans (k=2) county cluster assignments from the 03_unsupervised_learning notebook (1,400 counties passing coverage filters).
+    target: processed/county_clusters.csv
+    sha256: "5946f8862bc5bc0b3045b8df5ff39b913e8af455ffb516a130fc774acd253d1c"
+    expected_rows: 1400
+    note: "county_fips in this file LOST its leading zeros (written from an int index) - 151 counties have 4-digit FIPS. Always load with zfill(5) before joining."

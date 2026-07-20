@@ -28,15 +28,13 @@ Requires Python 3.11 or newer (developed on 3.13).
 python -m pip install -r requirements.txt
 ```
 
-Run the notebooks in numbered order; each depends on outputs from earlier ones (for example, `04`
-uses the table built in `02` and the clusters from `03`, and `05` uses the frame exported by `04`).
-The pipeline runs in a few minutes once the data is in `data/raw/`.
+Run the notebooks in numbered order; each uses outputs from the earlier ones. The pipeline runs in a
+few minutes once the data is in `data/raw/`.
 
 ## Data
 
-Source data is not committed to the repository. The exact file versions are recorded
-in `data/manifest.yaml`, each with a fingerprint that confirms you have the identical file; download
-them into `data/raw/` before running the notebooks.
+Source data is not committed. `data/manifest.yaml` lists each dataset's exact version and a
+fingerprint to verify it; download the files into `data/raw/` before running the notebooks.
 
 | Dataset | Role | Source |
 |---|---|---|
@@ -50,7 +48,7 @@ Notebook 04 also downloads US county boundaries (county FIPS GeoJSON) automatica
 ## Repository layout
 
 ```
-data/         raw (gitignored) and processed inputs, plus the pinned manifest
+data/         the pinned manifest (raw and processed data are gitignored)
 notebooks/    the analysis pipeline
 reports/      figures and outputs
 requirements.txt
