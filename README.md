@@ -12,7 +12,7 @@ the question with unsupervised and supervised models.
 **Finding.** The supervised analysis finds at most a small, borderline association that does not
 survive adjustment for a county's own prior outcomes; details and caveats are in `04_supervised_learning`.
 
-## Notebooks (run in order)
+## Notebooks
 
 1. `01_loading_data`: load and explore the raw CMS files
 2. `02_zip_county_crosswalk`: map physician groups to counties and build the analytic table
@@ -34,7 +34,7 @@ The pipeline runs in a few minutes once the data is in `data/raw/`.
 
 ## Data
 
-All source data is public and is not committed to the repository. The exact file versions are recorded
+Source data is not committed to the repository. The exact file versions are recorded
 in `data/manifest.yaml`, each with a fingerprint that confirms you have the identical file; download
 them into `data/raw/` before running the notebooks.
 
@@ -45,15 +45,13 @@ them into `data/raw/` before running the notebooks.
 | Medicare Geographic Variation | county outcomes and controls | [CMS Summary Statistics](https://data.cms.gov/summary-statistics-on-use-and-payments/medicare-geographic-comparisons/medicare-geographic-variation-by-national-state-county) |
 | ZIP-to-county crosswalk | geography | [HUD USPS ZIP Crosswalk](https://www.huduser.gov/portal/datasets/usps_crosswalk.html) |
 
-Notebook 04 also downloads US county boundaries (county FIPS GeoJSON) automatically for the maps. The
-CMS and HUD data are public U.S. government works; source licenses are respected for use and
-redistribution.
+Notebook 04 also downloads US county boundaries (county FIPS GeoJSON) automatically for the maps.
 
 ## Repository layout
 
 ```
 data/         raw (gitignored) and processed inputs, plus the pinned manifest
-notebooks/    the analysis pipeline, run in numbered order
+notebooks/    the analysis pipeline
 reports/      figures and outputs
 requirements.txt
 ```
