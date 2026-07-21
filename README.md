@@ -66,7 +66,6 @@ Notebook 04 also downloads US county boundaries (county FIPS GeoJSON) automatica
 data/         pinned manifest and small MIPS reference tables (bulk raw, interim, and processed data is gitignored)
 notebooks/    the analysis pipeline
 reports/      figures
-scripts/      utility scripts (e.g. the interactive residual map generator)
 requirements.txt
 ```
 
