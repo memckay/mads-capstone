@@ -9,10 +9,15 @@ Does regional physician-group quality, measured by Medicare's Merit-based Incent
 characteristics are accounted for? This project builds a county panel from public CMS data and tests
 the question with unsupervised and supervised models.
 
-**Finding.** The supervised analysis finds at most a small, borderline association that does not
-survive adjustment for a county's own prior outcomes: it reads as one stable county trait tracking
-another, and as a lower bound given exposure misattribution. Details and caveats are in
-[`04_supervised_learning`](notebooks/04_supervised_learning.ipynb); key figures are in
+**Unsupervised.** County MIPS profiles are high-dimensional (~41 components for 90% variance) and
+do not form sharp clusters (best silhouette ~0.10 at k=2). PC1 is mostly preventive care; cluster
+differences show up more in utilization and cost than in acute outcomes like readmissions. Details
+in [`03_unsupervised_learning`](notebooks/03_unsupervised_learning.ipynb).
+
+**Supervised.** At most a small, borderline association with readmissions after demographics
+(~+0.017 R²) that is essentially absorbed by the county's own prior-year outcomes: one stable
+county trait tracking another, and a lower bound given exposure misattribution. Details in
+[`04_supervised_learning`](notebooks/04_supervised_learning.ipynb); figures in
 [`reports/figures/`](reports/figures).
 
 ## Notebooks
