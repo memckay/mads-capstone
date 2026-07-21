@@ -10,7 +10,6 @@ polars==1.41.2
 # Viz
 matplotlib==3.10.6
 seaborn==0.13.2
-plotly==6.9.0   # only needed for scripts/interactive_residual_map.py
 
 # ML
 scikit-learn>=1.5
