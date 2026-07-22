@@ -4,6 +4,11 @@
 # Raw files live in data/raw/ (gitignored). Download each dataset from its url
 # below into data/raw/ under the listed target filename, then confirm the sha256
 # and row count match the values recorded here. This is the reproducibility gate.
+#
+# Access note: the fallback_url snapshots live on the team Google Drive and only
+# open for accounts signed in with a University of Michigan (umich.edu) email.
+# Anyone without UM access should download from the public CMS/HUD url or landing
+# page instead.
 
 datasets:
   - name: group_mips_performance
@@ -11,7 +16,7 @@ datasets:
     dataset_id: "0ba7-2cb0"
     landing: https://data.cms.gov/provider-data/dataset/0ba7-2cb0
     url: https://data.cms.gov/provider-data/sites/default/files/resources/aaa9711048714dfc052c965a4e02a2f9_1763510758/grp_public_reporting.csv
-    fallback_url: ""   # optional: shared Google Drive direct-download link (frozen snapshot)
+    fallback_url: "https://drive.google.com/file/d/1bscbDT5sEMKIxsN9Yz0Pg5P8Qvtz5bN-/view?usp=sharing"   # shared Google Drive direct-download link (frozen snapshot)
     target: grp_public_reporting.csv
     sha256: "ae983295f8fc994ac535351f7901b2d38d3b74c20978969fff0bbdc85dd59315"
     expected_rows: 199228   # PY2023 Group Public Reporting, CMS snapshot modified 2025-11-18
@@ -21,7 +26,7 @@ datasets:
     dataset_id: "mj5m-pzi6"
     landing: https://data.cms.gov/provider-data/dataset/mj5m-pzi6
     url: https://data.cms.gov/provider-data/sites/default/files/resources/52c3f098d7e56028a298fd297cb0b38d_1780085742/DAC_NationalDownloadableFile.csv
-    fallback_url: ""
+    fallback_url: "https://drive.google.com/file/d/1vAzrVVjhLsQYeENjOLqDqMghfjOPEKBs/view?usp=sharing"
     target: DAC_NationalDownloadableFile.csv
     sha256: "8448857a9edf81eee70754e98967be06b3e24c8d3d30e15371f117ec116d063c"
     expected_rows: 3387942   # team-canonical snapshot, pulled from shared Drive 2026-07-15 (CMS refresh after 2026-05-29)
@@ -32,7 +37,7 @@ datasets:
     dataset_id: "6219697b-8f6c-4164-bed4-cd9317c58ebc"
     landing: https://data.cms.gov/summary-statistics-on-use-and-payments/medicare-geographic-comparisons/medicare-geographic-variation-by-national-state-county
     url: https://data.cms.gov/sites/default/files/2026-04/cc600d1e-d475-4b0e-80dc-1f64c01ca68c/2014-2024%20Original%20Medicare%20Geographic%20Variation%20Public%20Use%20File.csv
-    fallback_url: ""
+    fallback_url: "https://drive.google.com/file/d/1ZTUaxq8t6LAbYKL58VdWrmjY6VvFan7v/view?usp=sharing"
     target: "2014-2024 Original Medicare Geographic Variation Public Use File.csv"
     sha256: "10c8304012da34da3ecfe4caf4548927095f693383814d0e79ce6711b6806fad"
     expected_rows: 36994   # National+State+County x 3 age levels x 2014-2024; filter BENE_GEO_LVL==County
@@ -42,7 +47,7 @@ datasets:
     description: HUD USPS ZIP to county crosswalk. Maps physician group ZIPs to counties (tot_ratio address allocation) for the county rollup.
     landing: https://www.huduser.gov/portal/datasets/usps_crosswalk.html
     url: ""   # HUD requires selecting the ZIP-COUNTY crosswalk and a quarter on the landing page; no stable direct URL
-    fallback_url: ""
+    fallback_url: "https://drive.google.com/file/d/16X8Kp-rW1hmhqJ7ILADOpZ8FYaE-9dhs/view?usp=sharing"
     target: ZIP-COUNTY.csv
     sha256: "5ab4ff5e3ea858da2daba0806736af0297ffc77ed4216f037c092543b88cd523"
     expected_rows: 54562
