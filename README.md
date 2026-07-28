@@ -30,21 +30,26 @@ county trait tracking another, and a lower bound given exposure misattribution. 
 
 ## Setup
 
-Requires Python 3.11 or newer (developed on 3.13 and 3.14; the `requirements.txt` versions were pinned on 3.13).
+Requires Python 3.11 or newer. The committed notebook outputs were produced on Python 3.12.11 with the
+exact versions in `requirements.txt`; the full pipeline was last run end to end on 2026-07-28.
 
 ```
 python -m pip install -r requirements.txt
 ```
 
-Run the notebooks in numbered order. Notebook 03 writes the cluster labels that notebook 04 reads.
+Run the notebooks in numbered order, **with `notebooks/` as the working directory** (every path in them
+is relative, like `../data/raw`). Notebook 02 writes the county-by-measure table and notebook 03 writes
+the cluster labels, both of which notebook 04 reads, so the order matters.
 
 Inputs live in two folders:
 - **Raw source files** go in `data/raw/` (see the Data section below).
 - **Team-built artifacts** go in `data/processed/`: `analytic_measure.csv.gz` (the county-by-measure
-  table read by notebooks 03 and 04) and `county_clusters.csv`. Notebook 02 documents how
-  `analytic_measure.csv.gz` is built, but the pipeline does not regenerate it; notebooks 03 and 04
-  load this pinned copy. Get both from the team's shared Drive (ask a maintainer) and verify each
-  `sha256` against [`data/manifest.yaml`](data/manifest.yaml).
+  table read by notebooks 03 and 04) and `county_clusters.csv`. Both are produced by the pipeline:
+  notebook 02 writes `analytic_measure.csv.gz` and notebook 03 writes `county_clusters.csv`, so
+  running the notebooks in order builds them from the raw files. A pre-built copy of each is also on
+  the team's shared Drive (ask a maintainer) if you want to skip straight to the modeling notebooks.
+  Verify either against [`data/manifest.yaml`](data/manifest.yaml); for `analytic_measure.csv.gz`
+  check `content_sha256`, not the file hash, since gzip framing and line endings differ by platform.
 
 The pipeline runs in a few minutes once the data is in place.
 
@@ -63,7 +68,10 @@ manually from the landing page and confirm its `sha256`.
 | Medicare Geographic Variation | county outcomes and controls | [CMS Summary Statistics](https://data.cms.gov/summary-statistics-on-use-and-payments/medicare-geographic-comparisons/medicare-geographic-variation-by-national-state-county) |
 | ZIP-to-county crosswalk | geography | [HUD USPS ZIP Crosswalk](https://www.huduser.gov/portal/datasets/usps_crosswalk.html) |
 
-Notebook 04 also downloads US county boundaries (county FIPS GeoJSON) automatically for the maps.
+Notebook 04 draws two map layers. County boundaries (county FIPS GeoJSON) download automatically on
+first run and cache in `data/raw/`. State boundaries ship with the repo as
+[`data/raw/us-states.geojson`](data/raw/us-states.geojson), since the file is small, static, and the
+map cannot be drawn without it; it is listed under `reference_assets` in the manifest.
 
 ## Repository layout
 

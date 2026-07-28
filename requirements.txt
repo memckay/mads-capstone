@@ -1,19 +1,21 @@
 # Healthcare Heroes (SIADS 699) - shared env so everyone's notebooks reproduce.
 # Install:  python -m pip install -r requirements.txt
-# Versions pinned to the current working environment (Python 3.13).
+# Versions pinned to the environment that produced the committed notebook outputs
+# (Python 3.12.11). All five notebooks were run end to end on this set on 2026-07-28.
 
 # Dataframes / numerics
 pandas==2.3.2
 numpy==2.3.2
 polars==1.41.2
+pyarrow==20.0.0   # required by polars .to_pandas() in notebooks 04 and 05
 
 # Viz
 matplotlib==3.10.6
 seaborn==0.13.2
 
 # ML
-scikit-learn>=1.5
-scipy>=1.14
+scikit-learn==1.7.2
+scipy==1.16.2
 
 # Stats / inference
 statsmodels==0.14.6
