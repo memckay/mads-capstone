@@ -1,0 +1,107 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+
+\usepackage[margin=1in]{geometry} % adjust margins
+
+\title{SIADS 699 Capstone Report}
+\author{Transaint Gau, Maria Paz, Zachary Sletten, Justin Tseng}
+\date{August 18, 2026}
+
+\begin{document}
+
+\maketitle
+
+\section{Abstract}
+Brief overview of Introduction, Methods, Findings, Discussion, Future Work (anticipating 0.5 to 1 pages in length)
+
+\section{Introduction}
+- Introduce main issue - healthcare access/quality across USA: The Merit-based Incentive Payment System (MIPS) is used by Medicare/Medicaid to incentivize physician behaviors. Does MIPS actually improve ultimate patient outcomes?
+
+- Discuss MIPS data (available to the general public): Using three separate government-provided datasets, each containing some features of interest
+
+- Project scope: only examining county-level data (~3000 counties across the USA); using preventable hospitalizations as method to evaluate patient outcomes (the fewer the better)
+
+\section{Methods}
+
+\subsection{Data Sanitization}
+- merge together selected datasets for further analysis
+
+- Adjust/sanitize data as necessary to account for missing data
+
+\subsection{Exploratory Data Analysis (EDA)}
+data profiling, duplicate checks, unique-value inspection, key cleaning, ZIP and county FIPS standardization, merge validation, weighted aggregation
+
+\subsection{Supervised Learning}
+- Linear regression w/ CIs
+
+- Elastic Net (correlated measures + feature selection)
+
+- tree ensemble (Random Forest / gradient boosting)
+
+- Each fit with and without MIPS features, to test whether MIPS adds predictive value over demographic controls alone
+
+- Grouped CV by state (neighboring counties are correlated) vs a demographics-only baseline
+
+\subsection{Unsupervised Learning}
+- PCA on MIPS measure matrix to reduce dimensionality and identify latent performance factors
+
+- county clustering (K-Means + hierarchical) based on MIPS performance profiles to find natural groupings of counties
+
+- silhouette scores/elbow method to determine optimal cluster count
+
+\section{Results}
+
+\subsection{Exploratory Data Analysis (EDA)}
+initial correlation/visualization analysis
+
+\subsection{Supervised Learning}
+- R² / MAE / RMSE per model, with vs without MIPS
+
+- Coefficients + CIs and feature importance for which measures matter most
+
+\subsection{Unsupervised Learning}
+- PCA variance explained and loadings interpretation (which MIPS measures drive each component)
+
+-- 41 components (across 55 measures) are needed to reach 90\% computational variance
+    
+- Cluster profiles (how clusters differ in MIPS performance patterns and demographic characteristics);
+
+-- The best cluster is k=2 (0.096 silhouette score) 
+    
+- Outcome comparison across clusters (do counties in "high-performing" clusters actually have better outcomes (readmissions, ER visits, etc.)?
+
+\section{Discussion}
+
+\subsection{Exploratory Data Analysis (EDA)}
+Keep?
+
+\subsection{Supervised Learning}
+A small, borderline association exists that is robust to demographic/specialty controls (but is functionally absorbed by a county’s own prior-year readmission rate)
+
+- Effect is cross-sectional, not forward
+
+- Adds essentially nothing beyond outcome history
+
+- Ranked measures are preventative but with mixed signs
+
+- Much of cross-sectional lift is reporting pattern
+
+- Estimate is a lower bound
+
+\subsection{Unsupervised Learning}
+- Implications of PCA results (no single axis dominates results)
+Despite silhouette score findings, clusters don’t show distinct performance archetypes
+
+- Compare strongest differentiators (standardized payment for tests, home health payments, DME costs, FQHC/RHC visits)
+
+- Discuss limitations: Findings are observational only, no causal claims; Excluded ~53\% of counties due to sparse coverage; Median imputation filled ~20\% of cells
+
+
+\subsection{Other}
+- Does preventable hospitalizations correlate with MIPS to show a connection between MIPS and positive patient outcomes?
+- Did the analysis reveal other interesting results that are worth discussing?
+
+\section{Future Work}
+With more time, we could look at more granular zip code/hospital-specific data (since counties can range greatly in population density) or explore other data features as well to determine if other metrics can indicate positive patient outcomes
+
+\end{document}
