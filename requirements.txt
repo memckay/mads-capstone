@@ -8,6 +8,7 @@ pandas==2.3.2
 numpy==2.3.2
 polars==1.41.2
 pyarrow==20.0.0   # required by polars .to_pandas() in notebooks 04 and 05
+pyyaml==6.0.3     # notebook 01 reads data/manifest.yaml to verify the raw data hashes
 
 # Viz
 matplotlib==3.10.6

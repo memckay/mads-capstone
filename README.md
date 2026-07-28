@@ -65,8 +65,10 @@ notebook 04 (four model families under grouped cross-validation).
 ## Data
 
 Source data is not committed. [`data/manifest.yaml`](data/manifest.yaml) pins each dataset's version
-and `sha256`. CMS and HUD rotate download URLs, so match files by hash if a link breaks. The HUD
-crosswalk has no stable direct URL; download it from the landing page.
+and `sha256`, and notebook 01 checks every raw file against it before loading anything, so a stale or
+newer snapshot stops the run instead of quietly changing your results. CMS and HUD refresh these files
+in place, so match by hash if a link breaks. The HUD crosswalk has no stable direct URL; download it
+from the landing page.
 
 | Dataset | Role | Source |
 |---|---|---|
