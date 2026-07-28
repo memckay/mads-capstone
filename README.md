@@ -71,23 +71,41 @@ manually from the landing page and confirm its `sha256`.
 Notebook 04 draws two map layers. County boundaries (county FIPS GeoJSON) download automatically on
 first run and cache in `data/raw/`. State boundaries ship with the repo as
 [`data/raw/us-states.geojson`](data/raw/us-states.geojson), since the file is small, static, and the
-map cannot be drawn without it; it is listed under `reference_assets` in the manifest.
+overlay is decorative, so the map still draws without it; it is listed under `reference_assets` in the
+manifest.
 
 ## Repository layout
 
 ```
-data/         pinned manifest and small MIPS reference tables (bulk raw, interim, and processed data is gitignored)
+data/         pinned manifest and small static reference geometry (bulk raw, interim, and processed data is gitignored)
 notebooks/    the analysis pipeline
-reports/      figures
+reports/      figures and the report source
 requirements.txt
+LICENSE
 ```
 
 ## Authors
 
 Transaint Gau, Maria Paz, Zachary Sletten, and Justin Tseng. University of Michigan, SIADS 699.
 
+## Code attributions
+
+Everything in `notebooks/` was written by the authors above, with these exceptions, each also noted in
+an in-line comment at the point of use:
+
+| What | Source | License |
+|---|---|---|
+| County boundary geometry (`geojson-counties-fips.json`, fetched at runtime) | [plotly/datasets](https://github.com/plotly/datasets) | MIT; boundaries are US Census derived, public domain |
+| State boundary geometry (`data/raw/us-states.geojson`) | Leaflet choropleth example | boundaries are US Census derived, public domain |
+| Truncated dendrogram rendering (notebook 03) | [`scipy.cluster.hierarchy.dendrogram`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.dendrogram.html) documented usage | BSD-3-Clause |
+
+Generative AI (Anthropic Claude) was used during development for code review, debugging, and
+documentation drafting. All analytical decisions, model choices, and interpretations are the authors'.
+
 ## License and use
 
-Coursework for the University of Michigan Master of Applied Data Science (SIADS 699); the code is
-shared for academic review. The source data is U.S. government data (CMS and HUD), not committed here;
-each source's own terms apply.
+The code in this repository is released under the [MIT License](LICENSE). It is coursework for the
+University of Michigan Master of Applied Data Science (SIADS 699) and is shared for academic review.
+The source data is U.S. government data (CMS and HUD), not committed here; each source's own terms
+apply, and the specific datasets and their provenance are pinned in
+[`data/manifest.yaml`](data/manifest.yaml).

@@ -10,7 +10,9 @@ env/
 # Jupyter
 .ipynb_checkpoints/
 
-# Data (raw/large data stays out of git; small reference CSVs are force-added)
+# Data: raw, interim, and processed data stays out of git. The one exception is
+# data/raw/us-states.geojson, small static reference geometry that is force-added
+# and pinned under reference_assets in data/manifest.yaml.
 data/raw/
 data/interim/
 data/processed/

@@ -41,7 +41,7 @@ datasets:
     target: "2014-2024 Original Medicare Geographic Variation Public Use File.csv"
     sha256: "10c8304012da34da3ecfe4caf4548927095f693383814d0e79ce6711b6806fad"
     expected_rows: 36994   # National+State+County x 3 age levels x 2014-2024; filter BENE_GEO_LVL==County
-    note: "Join key BENE_GEO_CD = county FIPS stored as int (zfill(5)). Outcomes: PQI0x_* preventable admissions, ACUTE_HOSP_READMSN_PCT, *_PER_1000_BENES. Controls: BENE_AVG_AGE, race %, BENE_DUAL_PCT."
+    note: "Join key BENE_GEO_CD = county FIPS stored as int (zfill(5)). Outcomes used: ACUTE_HOSP_READMSN_PCT (the primary target), TOT_MDCR_STDZD_PYMT_PC (the secondary cost target), and *_PER_1000_BENES. Controls: BENE_AVG_AGE, race %, BENE_DUAL_PCT. NOTE: the PQI0x_* preventable-admission columns are NOT usable here. They are populated only at national and state level and are null on 100% of county rows, so they cannot serve as a county outcome despite being present in the file."
 
   - name: zip_to_county_crosswalk
     description: HUD USPS ZIP to county crosswalk. Maps physician group ZIPs to counties (tot_ratio address allocation) for the county rollup.
@@ -62,7 +62,7 @@ reference_assets:
     sha256: "6f23ed91fce2c25d57c01d83225342ba40258e9571c486c3999bd827c80d193b"
     expected_features: 52
     source: "Leaflet choropleth example (us-states.geojson); boundaries derived from US Census cartographic files."
-    note: "Committed to the repo rather than downloaded: 87 KB, static, and notebook 04 cannot draw the map without it. The overlay is decorative and the cell degrades gracefully if the file is absent."
+    note: "Committed to the repo rather than downloaded: 87 KB, static, and needed for the residual choropleth in notebook 04. The overlay is decorative, so the cell degrades gracefully and draws the map without state outlines if the file is absent."
 
 # Team-generated artifacts (from shared Drive; not raw sources).
 # Pinned here so everyone can confirm they model on the same bytes.
