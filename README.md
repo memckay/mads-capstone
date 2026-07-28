@@ -14,19 +14,23 @@ do not form sharp clusters (best silhouette ~0.10 at k=2). PC1 is mostly prevent
 differences show up more in utilization and cost than in acute outcomes like readmissions. Details
 in [`03_unsupervised_learning`](notebooks/03_unsupervised_learning.ipynb).
 
-**Supervised.** At most a small, borderline association with readmissions after demographics
-(~+0.017 R²) that is essentially absorbed by the county's own prior-year outcomes: one stable
-county trait tracking another, and a lower bound given exposure misattribution. Details in
+**Supervised.** County-level MIPS aggregates turn out to be too thin to carry a regional quality
+signal: two thirds of county-measure cells rest on two or fewer reporting practices, and county
+reporting pattern alone recovers most of the tree model's lift. The association that survives is small
+(~+0.017 R² after demographics) and is absorbed by the county's own prior-year outcomes, which is what
+a mostly-noise exposure predicts. At the measure level, 3 of the 16 measures clearing a 70% coverage
+floor hold up after correction, all preventive care. This is a claim about the county aggregate, not
+about MIPS at the practice level. Details in
 [`04_supervised_learning`](notebooks/04_supervised_learning.ipynb); figures in
 [`reports/figures/`](reports/figures).
 
 ## Notebooks
 
 1. [`01_loading_data`](notebooks/01_loading_data.ipynb): load and explore the raw CMS files
-2. [`02_zip_county_crosswalk`](notebooks/02_zip_county_crosswalk.ipynb): map physician groups to counties; documents how the analytic table is built (later notebooks load the pinned artifact, not a fresh build)
+2. [`02_zip_county_crosswalk`](notebooks/02_zip_county_crosswalk.ipynb): map physician groups to counties and write the county-by-measure table that notebooks 03 and 04 read
 3. [`03_unsupervised_learning`](notebooks/03_unsupervised_learning.ipynb): PCA and clustering on county MIPS profiles
 4. [`04_supervised_learning`](notebooks/04_supervised_learning.ipynb): does MIPS predict county outcomes beyond demographics?
-5. [`05_supervised_learning_extensions`](notebooks/05_supervised_learning_extensions.ipynb): population weighting and PCA robustness checks
+5. [`05_supervised_learning_extensions`](notebooks/05_supervised_learning_extensions.ipynb): robustness checks on population weighting, PCA features, and spatial standard errors
 
 ## Setup
 
@@ -51,7 +55,9 @@ Inputs live in two folders:
   Verify either against [`data/manifest.yaml`](data/manifest.yaml); for `analytic_measure.csv.gz`
   check `content_sha256`, not the file hash, since gzip framing and line endings differ by platform.
 
-The pipeline runs in a few minutes once the data is in place.
+Expect roughly 10 to 20 minutes for the full run once the data is in place. Notebook 02 dominates the
+early part (it reads an 840 MB provider file) and notebook 04 the rest (four model families under
+grouped cross-validation).
 
 ## Data
 
