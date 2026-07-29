@@ -1,4 +1,4 @@
-# Healthcare Heroes (SIADS 699) - shared env so everyone's notebooks reproduce.
+# SIADS 699 capstone - shared env so everyone's notebooks reproduce.
 # Install:  python -m pip install -r requirements.txt
 # Versions pinned to the environment that produced the committed notebook outputs
 # (Python 3.12.11). All five notebooks were run end to end on this set on 2026-07-28.

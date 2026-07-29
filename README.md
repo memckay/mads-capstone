@@ -1,4 +1,4 @@
-# MADS Capstone: Healthcare Heroes
+# County-Level MIPS Quality Scores: Coverage Limits and Association with Medicare Outcomes
 
 Does regional physician-group quality, measured by Medicare's Merit-based Incentive Payment System
 (MIPS), relate to county-level Medicare outcomes such as hospital readmissions once county

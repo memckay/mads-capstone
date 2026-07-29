@@ -1,4 +1,4 @@
-# Pinned data sources for Healthcare Heroes (SIADS 699).
+# Pinned data sources for the SIADS 699 capstone.
 # Goal: everyone pulls byte-identical data so results reproduce.
 #
 # Raw files live in data/raw/ (gitignored). Download each dataset from its url
