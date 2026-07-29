@@ -1,30 +1,43 @@
 # County-Level MIPS Quality Scores: Coverage Limits and Association with Medicare Outcomes
 
 Does regional physician-group quality, measured by Medicare's Merit-based Incentive Payment System
-(MIPS), relate to county-level Medicare outcomes such as hospital readmissions once county
-characteristics are accounted for?
+(MIPS), relate to county-level Medicare outcomes once county characteristics are accounted for? The
+primary outcome is the county 30-day all-cause hospital readmission rate for 2023; standardized Medicare
+payment per capita is carried as a secondary outcome. MIPS is published for a single performance year,
+so our analysis is cross-sectional rather than a forward-looking panel.
 
 ---
 
 ## Findings
 
-County-level MIPS aggregates turn out to be too thin to carry a regional quality signal. Two thirds
-of county-measure cells rest on two or fewer reporting practices, and a county's reporting pattern
+County-level MIPS aggregates appear too thin to carry a reliable regional quality signal. Two thirds of
+county-measure cells are based on two or fewer reporting practices, and a county's reporting pattern
 alone recovers most of what the models gain from the scores themselves.
 
 ![Cross-validated R2 for four models, each fitted with county controls only and again with controls plus MIPS. Gradient boosting gains the most at +0.020, Elastic Net +0.017, random forest +0.013, and linear OLS is negative at -0.009. Every model leaves most county readmission variance unexplained.](reports/figures/sl_delta_r2.png)
 
-The association that does survive is small, about +0.017 R² once demographics are accounted for, and
-it is absorbed by the county's own prior-year readmission rate, which is what a mostly-noise exposure
-predicts. Of the 16 measures reported widely enough to test, 3 hold up after correction, all
-preventive care.
+Four models were fitted with and without the MIPS measures. The gains are small throughout, and we
+quote the Elastic Net at **+0.017 R²** because its gain is the most consistent, positive in all five
+held-out folds, rather than the largest. Gradient boosting gains more (+0.020) but in only two of five
+folds, and linear regression gets worse.
+
+Adding the county's own prior-year readmission rate largely erases the MIPS contribution, which
+suggests that outcome persistence explains more than contemporaneous MIPS performance. Of the 16
+measures reported widely enough to test, 3 survive multiple-testing correction, all preventive care:
+diabetes HbA1c poor control, cervical cancer screening, and breast cancer screening. For each of
+these, better county-level performance is associated with fewer readmissions, though the associations
+remain small.
 
 Clustering the same county profiles without any outcome data reaches the same place from the other
-direction. The profiles are high-dimensional, taking roughly 41 components to reach 90% of the
+direction. The profiles are high-dimensional, requiring roughly 41 components to reach 90% of the
 variance, and they form no sharp groups, with the best silhouette around 0.10 at k=2. A continuum
-rather than distinct archetypes is what you would expect if the underlying signal is mostly noise.
+rather than distinct archetypes is consistent with a weak or noisy county-level signal.
 
-All of this concerns the county aggregate, not MIPS at the practice level where the program operates.
+These findings apply to county-level MIPS aggregates, not to MIPS performance at the individual
+practice level where the program operates. They should not be read as evidence that MIPS lacks value
+for practices; the question here is whether the signal survives aggregation to counties. The results
+are associations, not causal estimates.
+
 Details in [`04_supervised_learning`](notebooks/04_supervised_learning.ipynb) and
 [`03_unsupervised_learning`](notebooks/03_unsupervised_learning.ipynb); figures in
 [`reports/figures/`](reports/figures).
@@ -39,7 +52,7 @@ which 04 reads.
 1. [`01_loading_data`](notebooks/01_loading_data.ipynb): load and profile the raw CMS files
 2. [`02_zip_county_crosswalk`](notebooks/02_zip_county_crosswalk.ipynb): map physician groups to counties, write `analytic_measure.csv.gz`
 3. [`03_unsupervised_learning`](notebooks/03_unsupervised_learning.ipynb): PCA and clustering on county MIPS profiles
-4. [`04_supervised_learning`](notebooks/04_supervised_learning.ipynb): does MIPS predict county outcomes beyond demographics?
+4. [`04_supervised_learning`](notebooks/04_supervised_learning.ipynb): does MIPS predict county outcomes beyond demographics, under state-grouped cross-validation?
 5. [`05_supervised_learning_extensions`](notebooks/05_supervised_learning_extensions.ipynb): robustness checks on population weighting, PCA features, and spatial standard errors
 
 ---
