@@ -8,21 +8,26 @@ characteristics are accounted for?
 
 ## Findings
 
-**Supervised.** County-level MIPS aggregates are too thin to carry a regional quality signal. Two
-thirds of county-measure cells rest on two or fewer reporting practices, and reporting pattern alone
-recovers most of the tree model's lift. The association that survives is small (~+0.017 R² after
-demographics) and is absorbed by the county's own prior-year outcomes, which is what a mostly-noise
-exposure predicts. Of the 16 measures clearing a 70% coverage floor, 3 hold up after correction, all
-preventive care. This is a claim about the county aggregate, not about MIPS at the practice level.
-See [`04_supervised_learning`](notebooks/04_supervised_learning.ipynb) and
-[`reports/figures/`](reports/figures).
+County-level MIPS aggregates turn out to be too thin to carry a regional quality signal. Two thirds
+of county-measure cells rest on two or fewer reporting practices, and a county's reporting pattern
+alone recovers most of what the models gain from the scores themselves.
 
 ![Cross-validated R2 for four models, each fitted with county controls only and again with controls plus MIPS. Gradient boosting gains the most at +0.020, Elastic Net +0.017, random forest +0.013, and linear OLS is negative at -0.009. Every model leaves most county readmission variance unexplained.](reports/figures/sl_delta_r2.png)
 
-**Unsupervised.** County MIPS profiles are high-dimensional (~41 components for 90% variance) and do
-not form sharp clusters (best silhouette ~0.10 at k=2). PC1 is mostly preventive care; cluster
-differences show up in utilization and cost more than in acute outcomes.
-See [`03_unsupervised_learning`](notebooks/03_unsupervised_learning.ipynb).
+The association that does survive is small, about +0.017 R² once demographics are accounted for, and
+it is absorbed by the county's own prior-year readmission rate, which is what a mostly-noise exposure
+predicts. Of the 16 measures reported widely enough to test, 3 hold up after correction, all
+preventive care.
+
+Clustering the same county profiles without any outcome data reaches the same place from the other
+direction. The profiles are high-dimensional, taking roughly 41 components to reach 90% of the
+variance, and they form no sharp groups, with the best silhouette around 0.10 at k=2. A continuum
+rather than distinct archetypes is what you would expect if the underlying signal is mostly noise.
+
+All of this concerns the county aggregate, not MIPS at the practice level where the program operates.
+Details in [`04_supervised_learning`](notebooks/04_supervised_learning.ipynb) and
+[`03_unsupervised_learning`](notebooks/03_unsupervised_learning.ipynb); figures in
+[`reports/figures/`](reports/figures).
 
 ---
 
