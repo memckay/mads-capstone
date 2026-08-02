@@ -56,6 +56,14 @@ datasets:
 # Small static reference geometry committed directly to the repo (no download step).
 # Listed here so the sha256 gate covers every input the notebooks read.
 reference_assets:
+  - name: county_geojson
+    description: County boundary polygons for the residual choropleth and the spatial neighbour weights in notebook 04.
+    target: raw/geojson-counties-fips.json
+    sha256: "e540149b7525e71ee6b6cab6dea2a95205f11e0c3e7374d27a7c9c47ea96e8c0"
+    expected_features: 3221
+    source: "plotly/datasets geojson-counties-fips.json (MIT licensed repository); boundaries are US Census derived, public domain."
+    note: "Committed to the repo (3.2 MB) rather than downloaded, so notebook 04 runs offline. The notebook keeps a download fallback for the case where the file is deleted, but it is guarded: a failed fetch raises a clear error rather than a network traceback."
+
   - name: us_states_geojson
     description: State boundary polygons used only as a basemap overlay on the residual choropleth in notebook 04.
     target: raw/us-states.geojson
