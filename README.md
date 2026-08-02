@@ -4,7 +4,7 @@ Does county-aggregated physician-group quality, measured by Medicare's Merit-bas
 System (MIPS), relate to county-level Medicare outcomes once county characteristics are accounted for?
 The primary outcome is the county 30-day all-cause hospital readmission rate for 2023; standardized
 Medicare cost per beneficiary is carried as a secondary outcome. MIPS is published for a single
-performance year, so our analysis is cross-sectional rather than a forward-looking panel.
+performance year, so our analysis is cross-sectional rather than a forward looking panel.
 
 ---
 
@@ -96,8 +96,8 @@ from the landing page.
 | Medicare Geographic Variation | county outcomes and controls | [CMS Summary Statistics](https://data.cms.gov/summary-statistics-on-use-and-payments/medicare-geographic-comparisons/medicare-geographic-variation-by-national-state-county) |
 | ZIP-to-county crosswalk | geography | [HUD USPS ZIP Crosswalk](https://www.huduser.gov/portal/datasets/usps_crosswalk.html) |
 
-Both map boundary files ship with the repo, in `data/raw/`, so the notebooks run offline. They are
-pinned in the manifest alongside the downloaded datasets.
+County and state map boundaries are included in `data/raw/` and pinned in the manifest, so the map
+cells can run without a first-run download.
 
 ---
 

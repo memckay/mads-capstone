@@ -1,14 +1,8 @@
-# Pinned data sources for the SIADS 699 capstone.
-# Goal: everyone pulls byte-identical data so results reproduce.
-#
-# Raw files live in data/raw/ (gitignored). Download each dataset from its url
-# below into data/raw/ under the listed target filename, then confirm the sha256
-# and row count match the values recorded here. This is the reproducibility gate.
-#
-# Access note: the fallback_url snapshots live on the team Google Drive and only
-# open for accounts signed in with a University of Michigan (umich.edu) email.
-# Anyone without UM access should download from the public CMS/HUD url or landing
-# page instead.
+# Pinned data sources for the SIADS 699 capstone, so results reproduce byte-for-byte.
+# Download each dataset from its url into data/raw/ (gitignored) under the target
+# filename, then confirm the sha256 and row count below. That is the reproducibility gate.
+# fallback_url snapshots are on the team Google Drive and need a umich.edu login;
+# without UM access, use the public CMS/HUD url or landing page.
 
 datasets:
   - name: group_mips_performance
@@ -16,7 +10,7 @@ datasets:
     dataset_id: "0ba7-2cb0"
     landing: https://data.cms.gov/provider-data/dataset/0ba7-2cb0
     url: https://data.cms.gov/provider-data/sites/default/files/resources/aaa9711048714dfc052c965a4e02a2f9_1763510758/grp_public_reporting.csv
-    fallback_url: "https://drive.google.com/file/d/1bscbDT5sEMKIxsN9Yz0Pg5P8Qvtz5bN-/view?usp=sharing"   # shared Google Drive direct-download link (frozen snapshot)
+    fallback_url: "https://drive.google.com/file/d/1bscbDT5sEMKIxsN9Yz0Pg5P8Qvtz5bN-/view?usp=sharing"
     target: grp_public_reporting.csv
     sha256: "ae983295f8fc994ac535351f7901b2d38d3b74c20978969fff0bbdc85dd59315"
     expected_rows: 199228   # PY2023 Group Public Reporting, CMS snapshot modified 2025-11-18
@@ -30,7 +24,7 @@ datasets:
     target: DAC_NationalDownloadableFile.csv
     sha256: "8448857a9edf81eee70754e98967be06b3e24c8d3d30e15371f117ec116d063c"
     expected_rows: 3387942   # team-canonical snapshot, pulled from shared Drive 2026-07-15 (CMS refresh after 2026-05-29)
-    note: "Do NOT open in Excel: it silently truncates to 1,048,575 rows and strips leading zeros from ZIP/PAC IDs. Verified clean 2026-07-15: 31 cols, ZIP lengths only 5/9, all PAC IDs 10-digit. CMS rotates resource URLs on refresh, so url above may point to an older snapshot; the shared Drive copy is canonical."
+    note: "Do NOT open in Excel: it truncates to 1,048,575 rows and strips leading zeros from ZIP/PAC IDs. CMS rotates resource URLs on refresh, so the url may be stale; the Drive copy is canonical."
 
   - name: county_outcomes_geo_variation
     description: "Medicare Geographic Variation by National/State/County: the outcome measures (2014-2024 PUF)."
@@ -41,7 +35,7 @@ datasets:
     target: "2014-2024 Original Medicare Geographic Variation Public Use File.csv"
     sha256: "10c8304012da34da3ecfe4caf4548927095f693383814d0e79ce6711b6806fad"
     expected_rows: 36994   # National+State+County x 3 age levels x 2014-2024; filter BENE_GEO_LVL==County
-    note: "Join key BENE_GEO_CD = county FIPS stored as int (zfill(5)). Outcomes used: ACUTE_HOSP_READMSN_PCT (the primary target), TOT_MDCR_STDZD_PYMT_PC (the secondary cost target), and *_PER_1000_BENES. Controls: BENE_AVG_AGE, race %, BENE_DUAL_PCT. NOTE: the PQI0x_* preventable-admission columns are NOT usable here. They are populated only at national and state level and are null on 100% of county rows, so they cannot serve as a county outcome despite being present in the file."
+    note: "Join key BENE_GEO_CD = county FIPS as int (zfill(5)). Primary outcome ACUTE_HOSP_READMSN_PCT, secondary TOT_MDCR_STDZD_PYMT_PC; controls include BENE_AVG_AGE, race %, BENE_DUAL_PCT. The PQI0x_* preventable-admission columns are null on all county rows, so they are NOT usable as a county outcome."
 
   - name: zip_to_county_crosswalk
     description: HUD USPS ZIP to county crosswalk. Maps physician group ZIPs to counties (tot_ratio address allocation) for the county rollup.
@@ -51,7 +45,7 @@ datasets:
     target: ZIP-COUNTY.csv
     sha256: "5ab4ff5e3ea858da2daba0806736af0297ffc77ed4216f037c092543b88cd523"
     expected_rows: 54562
-    note: "Columns used: zip, geoid (county FIPS), tot_ratio. Download the ZIP-COUNTY crosswalk from the HUD landing page (select a quarter)."
+    note: "Columns used: zip, geoid (county FIPS), tot_ratio. Download from the HUD landing page (select a quarter)."
 
 # Small static reference geometry committed directly to the repo (no download step).
 # Listed here so the sha256 gate covers every input the notebooks read.
@@ -62,7 +56,7 @@ reference_assets:
     sha256: "e540149b7525e71ee6b6cab6dea2a95205f11e0c3e7374d27a7c9c47ea96e8c0"
     expected_features: 3221
     source: "plotly/datasets geojson-counties-fips.json (MIT licensed repository); boundaries are US Census derived, public domain."
-    note: "Committed to the repo (3.2 MB) rather than downloaded, so notebook 04 runs offline. The notebook keeps a download fallback for the case where the file is deleted, but it is guarded: a failed fetch raises a clear error rather than a network traceback."
+    note: "Committed (3.2 MB) so notebook 04 runs offline; it keeps a guarded download fallback that raises a clear error, not a traceback, if the file is missing and the fetch fails."
 
   - name: us_states_geojson
     description: State boundary polygons used only as a basemap overlay on the residual choropleth in notebook 04.
@@ -70,7 +64,7 @@ reference_assets:
     sha256: "6f23ed91fce2c25d57c01d83225342ba40258e9571c486c3999bd827c80d193b"
     expected_features: 52
     source: "Leaflet choropleth example (us-states.geojson); boundaries derived from US Census cartographic files."
-    note: "Committed to the repo rather than downloaded: 87 KB, static, and needed for the residual choropleth in notebook 04. The overlay is decorative, so the cell degrades gracefully and draws the map without state outlines if the file is absent."
+    note: "Committed (87 KB) for the notebook 04 choropleth. The overlay is decorative: if absent, the cell draws the map without state outlines."
 
 # Team-generated artifacts (from shared Drive; not raw sources).
 # Pinned here so everyone can confirm they model on the same bytes.
@@ -78,18 +72,17 @@ team_artifacts:
   - name: analytic_measure
     description: County x measure modeling table (geo county outcomes joined to county-aggregated MIPS). Regenerated by the 02_zip_county_crosswalk notebook; the Drive copy below is a fast-start download of the same table.
     target: processed/analytic_measure.csv.gz
-    # Verify this one, not the gzip sha256. Gzip framing and line endings differ by
-    # platform (the Drive snapshot was written on Windows with CRLF), so the file
-    # hash changes across machines even when every value is identical. Check with:
+    # Verify content_sha256, not the gzip hash (gzip framing and line endings vary by
+    # platform; the Drive snapshot is Windows CRLF, so the file hash differs while values match):
     #   gzcat data/processed/analytic_measure.csv.gz | tr -d '\r' | shasum -a 256
     content_sha256: "a0a05f4d59e65cbda8622c575db19cfa8503087f330b86946a3ad38787fd542c"
     gzip_sha256_drive_snapshot: "17ad5e1f1085138a035de0bc6a9bc5d74f8c61948555f8087e96d06253f462d2"   # CRLF, Windows-authored
     expected_rows: 1611053   # x 255 cols; filter YEAR==2023 before modeling
-    note: "county_fips is 5-digit zero-padded text here. Rebuilt from notebook 02 on 2026-07-28 and confirmed identical to the Drive snapshot on all 1,611,053 rows x 255 cols after newline normalization."
+    note: "county_fips is 5-digit zero-padded text. Rebuilt from notebook 02 and confirmed identical to the Drive snapshot after newline normalization."
 
   - name: county_clusters
     description: KMeans (k=2) county cluster assignments from the 03_unsupervised_learning notebook (1,400 counties passing coverage filters).
     target: processed/county_clusters.csv
     sha256: "5946f8862bc5bc0b3045b8df5ff39b913e8af455ffb516a130fc774acd253d1c"
     expected_rows: 1400
-    note: "county_fips in this file LOST its leading zeros (written from an int index) - 151 counties have 4-digit FIPS. Always load with zfill(5) before joining."
+    note: "county_fips LOST its leading zeros (written from an int index): 151 counties have 4-digit FIPS, so load with zfill(5) before joining."
