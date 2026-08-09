@@ -1,85 +1,133 @@
-# MADS Capstone: Healthcare Heroes
+# County-Level MIPS Quality Scores: Coverage Limits and Association with Medicare Outcomes
 
-University of Michigan, Master of Applied Data Science capstone research project.
+Does county-aggregated physician-group quality, measured by Medicare's Merit-based Incentive Payment
+System (MIPS), relate to county-level Medicare outcomes once county characteristics are accounted for?
+The primary outcome is the county 30-day all-cause hospital readmission rate for 2023; standardized
+Medicare cost per beneficiary is carried as a secondary outcome. MIPS is published for a single
+performance year, so our analysis is cross-sectional rather than a forward looking panel.
 
-## Overview
+---
 
-Does regional physician-group quality, measured by Medicare's Merit-based Incentive Payment System
-(MIPS), relate to county-level Medicare outcomes such as hospital readmissions once county
-characteristics are accounted for? This project builds a county panel from public CMS data and tests
-the question with unsupervised and supervised models.
+## Findings
 
-**Unsupervised.** County MIPS profiles are high-dimensional (~41 components for 90% variance) and
-do not form sharp clusters (best silhouette ~0.10 at k=2). PC1 is mostly preventive care; cluster
-differences show up more in utilization and cost than in acute outcomes like readmissions. Details
-in [`03_unsupervised_learning`](notebooks/03_unsupervised_learning.ipynb).
+County-level MIPS aggregates appear too thin to carry a reliable regional quality signal. Two-thirds
+of county-measure cells are based on two or fewer reporting practices, and a county's reporting
+pattern alone recovers most of what the models gain from the scores themselves.
 
-**Supervised.** At most a small, borderline association with readmissions after demographics
-(~+0.017 R²) that is essentially absorbed by the county's own prior-year outcomes: one stable
-county trait tracking another, and a lower bound given exposure misattribution. Details in
-[`04_supervised_learning`](notebooks/04_supervised_learning.ipynb); figures in
+![Cross-validated R² for four models, each fitted with county controls only and again with controls plus MIPS. Gradient boosting gains the most at +0.020, Elastic Net +0.017, random forest +0.013, and linear OLS is negative at -0.009. Every model leaves most county readmission variance unexplained.](reports/figures/sl_delta_r2.png)
+
+Four models were fitted with and without the MIPS measures. The gains are small throughout, and we
+quote the Elastic Net at **+0.017 R²** because its gain is the most consistent, positive in all five
+held-out folds, rather than the largest. Gradient boosting gains more (+0.020) but in only two of five
+folds, and linear regression gets worse.
+
+Adding the county's own prior-year readmission rate largely erases the MIPS contribution, suggesting
+that the signal overlaps more with persistent county outcome patterns than with contemporaneous MIPS
+performance. Of the 16 measures reported widely enough to test, 3 survive multiple-testing
+correction, all preventive care: diabetes HbA1c poor control, cervical cancer screening, and breast
+cancer screening. For each of these, better county-level performance is associated with fewer
+readmissions, though the associations remain small.
+
+Clustering the same county profiles without any outcome data reaches the same place from the other
+direction. The profiles are high-dimensional, requiring roughly 41 components to reach 90% of the
+variance, and they form no sharp groups, with the best silhouette around 0.10 at k = 2. A continuum
+rather than distinct archetypes is consistent with a weak or noisy county-level signal.
+
+These findings apply to county-level MIPS aggregates, not to MIPS performance at the individual
+practice level where the program operates. They should not be read as evidence that MIPS lacks value
+for practices; the question here is whether the signal survives aggregation to counties. The results
+are associations, not causal estimates.
+
+Details in [`04_supervised_learning`](notebooks/04_supervised_learning.ipynb) and
+[`03_unsupervised_learning`](notebooks/03_unsupervised_learning.ipynb); figures in
 [`reports/figures/`](reports/figures).
+
+---
 
 ## Notebooks
 
-1. [`01_loading_data`](notebooks/01_loading_data.ipynb): load and explore the raw CMS files
-2. [`02_zip_county_crosswalk`](notebooks/02_zip_county_crosswalk.ipynb): map physician groups to counties; documents how the analytic table is built (later notebooks load the pinned artifact, not a fresh build)
+Run in numbered order. Notebook 02 writes the county-by-measure table and notebook 03 writes the
+cluster labels, both of which notebook 04 reads.
+
+1. [`01_loading_data`](notebooks/01_loading_data.ipynb): load and profile the raw CMS files
+2. [`02_zip_county_crosswalk`](notebooks/02_zip_county_crosswalk.ipynb): map physician groups to counties and write `analytic_measure.csv.gz`
 3. [`03_unsupervised_learning`](notebooks/03_unsupervised_learning.ipynb): PCA and clustering on county MIPS profiles
-4. [`04_supervised_learning`](notebooks/04_supervised_learning.ipynb): does MIPS predict county outcomes beyond demographics?
-5. [`05_supervised_learning_extensions`](notebooks/05_supervised_learning_extensions.ipynb): population weighting and PCA robustness checks
+4. [`04_supervised_learning`](notebooks/04_supervised_learning.ipynb): test whether MIPS adds predictive value beyond county controls under state-grouped cross-validation
+5. [`05_supervised_learning_extensions`](notebooks/05_supervised_learning_extensions.ipynb): robustness checks on population weighting, PCA features, and spatial standard errors
+
+---
 
 ## Setup
 
-Requires Python 3.11 or newer (developed on 3.13 and 3.14; the `requirements.txt` versions were pinned on 3.13).
+Python 3.11+. The committed outputs were produced on 3.12.11 with the exact versions pinned in
+`requirements.txt`.
 
-```
+```bash
 python -m pip install -r requirements.txt
+cd notebooks && jupyter lab
 ```
 
-Run the notebooks in numbered order. Notebook 03 writes the cluster labels that notebook 04 reads.
+**Run with `notebooks/` as the working directory**; every path in the notebooks is relative, like
+`../data/raw`.
 
-Inputs live in two folders:
-- **Raw source files** go in `data/raw/` (see the Data section below).
-- **Team-built artifacts** go in `data/processed/`: `analytic_measure.csv.gz` (the county-by-measure
-  table read by notebooks 03 and 04) and `county_clusters.csv`. Notebook 02 documents how
-  `analytic_measure.csv.gz` is built, but the pipeline does not regenerate it; notebooks 03 and 04
-  load this pinned copy. Get both from the team's shared Drive (ask a maintainer) and verify each
-  `sha256` against [`data/manifest.yaml`](data/manifest.yaml).
+Put the raw source files in `data/raw/` (see [Data](#data)). The pipeline builds everything else, so
+`data/processed/` starts empty. Prebuilt copies of `analytic_measure.csv.gz` and
+`county_clusters.csv` are on the team's shared Drive if you want to skip to the modeling notebooks.
+Verify them against [`data/manifest.yaml`](data/manifest.yaml), using `content_sha256` for the gzip
+file since its file hash differs by platform.
 
-The pipeline runs in a few minutes once the data is in place.
+A full run takes roughly 10 to 20 minutes, mostly notebook 02, which reads an 840 MB provider file,
+and notebook 04, which runs four model families under grouped cross-validation.
+
+---
 
 ## Data
 
-Source data is not committed. [`data/manifest.yaml`](data/manifest.yaml) lists each dataset's exact
-version and a fingerprint to verify it; download the files into `data/raw/` before running the
-notebooks. CMS and HUD rotate their download URLs, so if a link stops working, match the file by its
-`sha256` in the manifest. The HUD crosswalk has no stable direct URL: download the ZIP-COUNTY file
-manually from the landing page and confirm its `sha256`.
+Source data is not committed. [`data/manifest.yaml`](data/manifest.yaml) pins each dataset's version
+and `sha256`, and notebook 01 checks every raw file against it before loading anything, so a stale or
+newer snapshot stops the run instead of quietly changing the results. CMS and HUD refresh these files
+in place, so match by hash if a link breaks. The HUD crosswalk has no stable direct URL; download it
+from the landing page.
 
 | Dataset | Role | Source |
 |---|---|---|
-| Group MIPS performance | predictor | [CMS Provider Data Catalog `0ba7-2cb0`](https://data.cms.gov/provider-data/dataset/0ba7-2cb0) |
-| Doctors & Clinicians national file | group to ZIP and specialty | [CMS Provider Data Catalog `mj5m-pzi6`](https://data.cms.gov/provider-data/dataset/mj5m-pzi6) |
+| Group MIPS performance | predictor | [CMS `0ba7-2cb0`](https://data.cms.gov/provider-data/dataset/0ba7-2cb0) |
+| Doctors & Clinicians national file | group to ZIP and specialty | [CMS `mj5m-pzi6`](https://data.cms.gov/provider-data/dataset/mj5m-pzi6) |
 | Medicare Geographic Variation | county outcomes and controls | [CMS Summary Statistics](https://data.cms.gov/summary-statistics-on-use-and-payments/medicare-geographic-comparisons/medicare-geographic-variation-by-national-state-county) |
 | ZIP-to-county crosswalk | geography | [HUD USPS ZIP Crosswalk](https://www.huduser.gov/portal/datasets/usps_crosswalk.html) |
 
-Notebook 04 also downloads US county boundaries (county FIPS GeoJSON) automatically for the maps.
+County and state map boundaries are included in `data/raw/` and pinned in the manifest, so the map
+cells can run without a first-run download.
+
+---
 
 ## Repository layout
 
+```text
+data/        pinned manifest and small static reference geometry; bulk data is gitignored
+notebooks/   analysis pipeline
+reports/     figures and report source
 ```
-data/         pinned manifest and small MIPS reference tables (bulk raw, interim, and processed data is gitignored)
-notebooks/    the analysis pipeline
-reports/      figures
-requirements.txt
-```
+
+---
 
 ## Authors
 
-Transaint Gau, Maria Paz, Zachary Sletten, and Justin Tseng. University of Michigan, SIADS 699.
+Transaint Gau, Maria Paz, Zachary Sletten, and Justin Tseng.
 
-## License and use
+---
 
-Coursework for the University of Michigan Master of Applied Data Science (SIADS 699); the code is
-shared for academic review. The source data is U.S. government data (CMS and HUD), not committed here;
-each source's own terms apply.
+## Third-party assets and attributions
+
+| Asset | Source | License |
+|---|---|---|
+| County boundaries (`geojson-counties-fips.json`) | [plotly/datasets](https://github.com/plotly/datasets) | MIT; boundaries US Census derived, public domain |
+| State boundaries (`data/raw/us-states.geojson`) | Leaflet choropleth example | boundaries US Census derived, public domain |
+
+---
+
+## License
+
+Code released under the [MIT License](LICENSE); coursework for SIADS 699, shared for academic review.
+The source data is U.S. government data from CMS and HUD, not committed here, and each source's own
+terms apply.
