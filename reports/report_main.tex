@@ -1,6 +1,7 @@
 \documentclass[12pt]{article}
 \usepackage{graphicx} % Required for inserting images
 \usepackage{parskip}
+\usepackage{float}
 
 \usepackage[T1]{fontenc}
 \usepackage{palatino}
@@ -43,27 +44,35 @@ In Notebook 2, we loaded our three data sources from Data Collection (Section \r
 After the consecutive left joins, we continued to sanitize our data. We standardized ZIP codes and converted MIPS performance metrics to a numeric scale, and also made further adjustments to accommodate the patient outcome DataFrame being at the county level only. Once sanitization was complete, we eliminated columns that were deemed unnecessary for the next steps of EDA, supervised learning, and unsupervised learning.
 
 \subsection[Exploratory Data Analysis (EDA)]{Exploratory Data Analysis (EDA) \\ \small{Notebook 2}}
-As part of our \textbf{E}xploratory \textbf{D}ata \textbf{A}nalysis (EDA), we looked for a correlation between better HbA1c control (a patient metric used to diagnose diabetes) and patient readmission rate.
+As part of our \textbf{E}xploratory \textbf{D}ata \textbf{A}nalysis (EDA), we looked for a correlation between better HbA1c control (a patient metric used to diagnose diabetes) and patient readmission rate (see Figure \ref{fig:hba1c_readmit}).
 
-\subsection[Supervised Learning]{Supervised Learning \\ \small{Notebook 3}}
+\begin{figure}[H]
+        \centering
+        \includegraphics[width=0.9\textwidth]{figures/hba1c_vs_readmission.png}
+        \caption{HbA1c vs. Acute Hospital Readmission Rate by county.}
+        \label{fig:hba1c_readmit}
+    \end{figure}
 
-\subsection[Unsupervised Learning]{Unsupervised Learning \\ \small{Notebooks 4 \& 5}}
+
+\subsection[Unsupervised Learning]{Unsupervised Learning \\ \small{Notebook 3}}
+For unsupervised learning, we utilized the dataset created in Section \ref{meth_sanitize}. After cutting the available data to only rows from 2023, we reshaped the data to one row per county and one column per measure. Any measures reported in less than 30\% of all counties and counties that reported in less than 20\% of all measures were removed from the data in order to ensure consistent clustering.
+
+\subsection[Supervised Learning]{Supervised Learning \\ \small{Notebooks 4 \& 5}}
 
 \section{Results}
 
 \subsection[Exploratory Data Analysis (EDA)]{Exploratory Data Analysis (EDA) \\ \small{Notebook 2}}
 
-\subsection[Supervised Learning]{Supervised Learning \\ \small{Notebook 3}}
+\subsection[Unsupervised Learning]{Unsupervised Learning \\ \small{Notebook 3}}
 
-\subsection[Unsupervised Learning]{Unsupervised Learning \\ \small{Notebooks 4 \& 5}}
-
+\subsection[Supervised Learning]{Supervised Learning \\ \small{Notebooks 4 \& 5}}
 \section{Discussion}
 % Translation
 \subsection[Exploratory Data Analysis (EDA)]{Exploratory Data Analysis (EDA) \\ \small{Notebook 2}}
 
-\subsection[Supervised Learning]{Supervised Learning \\ \small{Notebook 3}}
+\subsection[Unsupervised Learning]{Unsupervised Learning \\ \small{Notebook 3}}
 
-\subsection[Unsupervised Learning]{Unsupervised Learning \\ \small{Notebooks 4 \& 5}}
+\subsection[Supervised Learning]{Supervised Learning \\ \small{Notebooks 4 \& 5}}
 
 \subsection{Other}
 
