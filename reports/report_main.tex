@@ -1,5 +1,9 @@
-\documentclass{article}
+\documentclass[12pt]{article}
 \usepackage{graphicx} % Required for inserting images
+\usepackage{parskip}
+
+\usepackage[T1]{fontenc}
+\usepackage{palatino}
 
 \usepackage[margin=1in]{geometry} % adjust margins
 
@@ -12,96 +16,73 @@
 \maketitle
 
 \section{Abstract}
-Brief overview of Introduction, Methods, Findings, Discussion, Future Work (anticipating 0.5 to 1 pages in length)
+% Project Statement
+Established by Centers for Medicare \& Medicaid Services, the \textbf{M}erit-based \textbf{I}ncentive \textbf{P}ayment \textbf{S}ystem (MIPS) is a system designed to transition Medicare clinicians towards a value-based care system \cite{Lin2025Merit-BasedYears}. Given the strong financial incentives present for clinicians to best mimic the behavior MIPS rewards, it is in Medicare users’ benefit for as strong a correlation between high MIPS scores and positive patient outcomes as possible. We downloaded three separate data files \cite{2023PYAttestations, 2026MedicareCounty, 2023DoctorsFile} to evaluate correlation between MIPS scores and various patient outcomes. We combined all three files into one DataFrame using a series of left joins and data sanitization, then performed supervised and unsupervised learning analyses.
 
 \section{Introduction}
-- Introduce main issue - healthcare access/quality across USA: The Merit-based Incentive Payment System (MIPS) is used by Medicare/Medicaid to incentivize physician behaviors. Does MIPS actually improve ultimate patient outcomes?
 
-- Discuss MIPS data (available to the general public): Using three separate government-provided datasets, each containing some features of interest
+\subsection{Background}
+Established by Centers for Medicare \& Medicaid Services, the \textbf{M}erit-based \textbf{I}ncentive \textbf{P}ayment \textbf{S}ystem (MIPS) is a system designed to transition Medicare clinicians towards a value-based care system. It determines clinician performance across four different categories (quality of care, improvement activities, electronic medical record interoperability, and cost) and provides an ultimate score that determines the reimbursement rate for that clinician \cite{Lin2025Merit-BasedYears}. 
 
-- Project scope: only examining county-level data (~3000 counties across the USA); using preventable hospitalizations as method to evaluate patient outcomes (the fewer the better)
+MIPS data is available to the public and freely downloadable \cite{2023PYAttestations}, meaning evaluations of the system’s efficacy can be performed. Given the strong financial incentives present for clinicians to best mimic the behavior MIPS rewards, it is in Medicare users’ benefit for as strong a correlation between high MIPS scores and positive patient outcomes as possible. 
+
+In order to measure MIPS, we utilized two other data sources. Our second source was a regional database of patient outcomes \cite{2026MedicareCounty}. This data source has multiple methods of measuring patient health outcomes, and provides a way for us to determine if there exists a strong correlation between those outcomes and MIPS scores. Our final source was a database of doctors and physicians enrolled with Medicare \cite{2023DoctorsFile}. This data source (referred to later as the "DAC") acts as the "bridge" between the first two data sources, allowing us to combine all three into one source for analysis.
+
+\subsection{Outcome Evaluation}
+% Evaluation Strategy
 
 \section{Methods}
+% Methodology
+% Technical Depth
+\subsection[Data Collection]{Data Collection \\ \small{Notebook 1}} \label{meth_collect}
+In Notebook 1, we loaded all three data sources into separate DataFrame objects. We also aligned the \texttt{org\_pac\_id} column in the DAC dataframe with ZIP codes to assist with Data Sanitization (Section \ref{meth_sanitize}) later on.
 
-\subsection{Data Sanitization}
-- merge together selected datasets for further analysis
+\subsection[Data Sanitization]{Data Sanitization \\ \small{Notebook 2}} \label{meth_sanitize}
+In Notebook 2, we loaded our three data sources from Data Collection (Section \ref{meth_collect}). After loading, we adjusted column names and ZIP code values to prepare for joining all three DataFrames into one DataFrame. We used a left join to combine the MIPS and DAC into one DataFrame object. After standardizing ZIP codes and other small adjustments, we used another left join to add the final patient outcomes DataFrame to create the final DataFrame.
 
-- Adjust/sanitize data as necessary to account for missing data
+After the consecutive left joins, we continued to sanitize our data. We standardized ZIP codes and converted MIPS performance metrics to a numeric scale, and also made further adjustments to accommodate the patient outcome DataFrame being at the county level only. Once sanitization was complete, we eliminated columns that were deemed unnecessary for the next steps of EDA, supervised learning, and unsupervised learning.
 
-\subsection{Exploratory Data Analysis (EDA)}
-data profiling, duplicate checks, unique-value inspection, key cleaning, ZIP and county FIPS standardization, merge validation, weighted aggregation
+\subsection[Exploratory Data Analysis (EDA)]{Exploratory Data Analysis (EDA) \\ \small{Notebook 2}}
 
-\subsection{Supervised Learning}
-- Linear regression w/ CIs
+\subsection[Supervised Learning]{Supervised Learning \\ \small{Notebook 3}}
 
-- Elastic Net (correlated measures + feature selection)
-
-- tree ensemble (Random Forest / gradient boosting)
-
-- Each fit with and without MIPS features, to test whether MIPS adds predictive value over demographic controls alone
-
-- Grouped CV by state (neighboring counties are correlated) vs a demographics-only baseline
-
-\subsection{Unsupervised Learning}
-- PCA on MIPS measure matrix to reduce dimensionality and identify latent performance factors
-
-- county clustering (K-Means + hierarchical) based on MIPS performance profiles to find natural groupings of counties
-
-- silhouette scores/elbow method to determine optimal cluster count
+\subsection[Unsupervised Learning]{Unsupervised Learning \\ \small{Notebooks 4 \& 5}}
 
 \section{Results}
 
-\subsection{Exploratory Data Analysis (EDA)}
-initial correlation/visualization analysis
+\subsection[Exploratory Data Analysis (EDA)]{Exploratory Data Analysis (EDA) \\ \small{Notebook 2}}
 
-\subsection{Supervised Learning}
-- R² / MAE / RMSE per model, with vs without MIPS
+\subsection[Supervised Learning]{Supervised Learning \\ \small{Notebook 3}}
 
-- Coefficients + CIs and feature importance for which measures matter most
-
-\subsection{Unsupervised Learning}
-- PCA variance explained and loadings interpretation (which MIPS measures drive each component)
-
--- 41 components (across 55 measures) are needed to reach 90\% computational variance
-    
-- Cluster profiles (how clusters differ in MIPS performance patterns and demographic characteristics);
-
--- The best cluster is k=2 (0.096 silhouette score) 
-    
-- Outcome comparison across clusters (do counties in "high-performing" clusters actually have better outcomes (readmissions, ER visits, etc.)?
+\subsection[Unsupervised Learning]{Unsupervised Learning \\ \small{Notebooks 4 \& 5}}
 
 \section{Discussion}
+% Translation
+\subsection[Exploratory Data Analysis (EDA)]{Exploratory Data Analysis (EDA) \\ \small{Notebook 2}}
 
-\subsection{Exploratory Data Analysis (EDA)}
-Keep?
+\subsection[Supervised Learning]{Supervised Learning \\ \small{Notebook 3}}
 
-\subsection{Supervised Learning}
-A small, borderline association exists that is robust to demographic/specialty controls (but is functionally absorbed by a county’s own prior-year readmission rate)
-
-- Effect is cross-sectional, not forward
-
-- Adds essentially nothing beyond outcome history
-
-- Ranked measures are preventative but with mixed signs
-
-- Much of cross-sectional lift is reporting pattern
-
-- Estimate is a lower bound
-
-\subsection{Unsupervised Learning}
-- Implications of PCA results (no single axis dominates results)
-Despite silhouette score findings, clusters don’t show distinct performance archetypes
-
-- Compare strongest differentiators (standardized payment for tests, home health payments, DME costs, FQHC/RHC visits)
-
-- Discuss limitations: Findings are observational only, no causal claims; Excluded ~53\% of counties due to sparse coverage; Median imputation filled ~20\% of cells
-
+\subsection[Unsupervised Learning]{Unsupervised Learning \\ \small{Notebooks 4 \& 5}}
 
 \subsection{Other}
-- Does preventable hospitalizations correlate with MIPS to show a connection between MIPS and positive patient outcomes?
-- Did the analysis reveal other interesting results that are worth discussing?
 
 \section{Future Work}
-With more time, we could look at more granular zip code/hospital-specific data (since counties can range greatly in population density) or explore other data features as well to determine if other metrics can indicate positive patient outcomes
+% Broader Impacts
+While our findings did not find a strong correlation between MIPS and patient outcomes, there are still opportunities for future work.
+
+\section{Statement of Work}
+% Statement of Work
+Each team member contributed equally to the overall project. Each member also served as the lead member for a specified block of work in the project, as listed below:
+\begin{itemize}
+  \item Saint Gau: Unsupervised Learning
+  \item Maria Paz: Supervised Learning
+  \item Zach Sletten: Data Sanitization/EDA
+  \item Justin Tseng: Report Composition/Aggregation
+\end{itemize}
+
+\newpage
+\bibliography{references.bib}
+% Context
+\bibliographystyle{IEEEtran}
 
 \end{document}
