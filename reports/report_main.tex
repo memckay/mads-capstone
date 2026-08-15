@@ -2,6 +2,8 @@
 \usepackage{graphicx} % Required for inserting images
 \usepackage{parskip}
 \usepackage{float}
+\usepackage{multirow}
+\usepackage{booktabs}
 
 \usepackage[T1]{fontenc}
 \usepackage{palatino}
@@ -18,7 +20,7 @@
 
 \section{Abstract}
 % Project Statement
-Established by Centers for Medicare \& Medicaid Services, the \textbf{M}erit-based \textbf{I}ncentive \textbf{P}ayment \textbf{S}ystem (MIPS) is a system designed to transition Medicare clinicians towards a value-based care system \cite{Lin2025Merit-BasedYears}. Given the strong financial incentives present for clinicians to best mimic the behavior MIPS rewards, it is in Medicare users’ benefit for as strong a correlation between high MIPS scores and positive patient outcomes as possible. We downloaded three separate data files \cite{2023PYAttestations, 2026MedicareCounty, 2023DoctorsFile} to evaluate correlation between MIPS scores and various patient outcomes. We combined all three files into one DataFrame using a series of left joins and data sanitization, then performed supervised and unsupervised learning analyses.
+Established by Centers for Medicare \& Medicaid Services, the \textbf{M}erit-based \textbf{I}ncentive \textbf{P}ayment \textbf{S}ystem (MIPS) is a system designed to transition Medicare clinicians towards a value-based care system \cite{Lin2025Merit-BasedYears}. Given the strong financial incentives present for clinicians to best mimic the behavior MIPS rewards, it is in Medicare users’ benefit for as strong a correlation between high MIPS scores and positive patient outcomes as possible. We downloaded three separate data files \cite{2023PYAttestations, 2026MedicareCounty, 2023DoctorsFile} to evaluate correlation between MIPS scores and various patient outcomes. We combined all three files into one DataFrame using a series of left joins and data sanitization, then performed supervised and unsupervised learning analyses. After unsupervised and supervised machine learning analysis, our findings suggested that  it is difficult to predict MIPS performance based on minimal feature information, and almost all of the significant features must be considered. We also found that a small, borderline association exists that is robust to demographic/specialty controls (but is functionally absorbed by a county’s own prior-year readmission rate). Future work could include re-evaluation using different county and measure cutoffs or more granular population divisions.
 
 \section{Introduction}
 
@@ -35,6 +37,8 @@ In order to measure MIPS, we utilized two other data sources. Our second source 
 \section{Methods}
 % Methodology
 % Technical Depth
+All Python work was split between five Jupyter notebook files. Data Collection (Section \ref{meth_collect}) was completed in Notebook 1. Data Sanitization (Section \ref{meth_sanitize}) and Exploratory Data Analysis (Section \ref{meth_eda}) were completed in Notebook 2. Unsupervised Learning (Section \ref{meth_unsup}) was completed in Notebook 3. Supervised Learning (Section \ref{meth_sup}) was completed in Notebooks 4 and 5.
+
 \subsection[Data Collection]{Data Collection \\ \small{Notebook 1}} \label{meth_collect}
 In Notebook 1, we loaded all three data sources into separate DataFrame objects. We also aligned the \texttt{org\_pac\_id} column in the DAC dataframe with ZIP codes to assist with Data Sanitization (Section \ref{meth_sanitize}) later on.
 
@@ -43,42 +47,116 @@ In Notebook 2, we loaded our three data sources from Data Collection (Section \r
 
 After the consecutive left joins, we continued to sanitize our data. We standardized ZIP codes and converted MIPS performance metrics to a numeric scale, and also made further adjustments to accommodate the patient outcome DataFrame being at the county level only. Once sanitization was complete, we eliminated columns that were deemed unnecessary for the next steps of EDA, supervised learning, and unsupervised learning.
 
-\subsection[Exploratory Data Analysis (EDA)]{Exploratory Data Analysis (EDA) \\ \small{Notebook 2}}
+\subsection[Exploratory Data Analysis (EDA)]{Exploratory Data Analysis (EDA) \\ \small{Notebook 2}} \label{meth_eda}
 As part of our \textbf{E}xploratory \textbf{D}ata \textbf{A}nalysis (EDA), we looked for a correlation between better HbA1c control (a patient metric used to diagnose diabetes) and patient readmission rate (see Figure \ref{fig:hba1c_readmit}).
 
 \begin{figure}[H]
-        \centering
-        \includegraphics[width=0.9\textwidth]{figures/hba1c_vs_readmission.png}
-        \caption{HbA1c vs. Acute Hospital Readmission Rate by county.}
-        \label{fig:hba1c_readmit}
-    \end{figure}
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/hba1c_vs_readmission.png}
+    \caption{HbA1c vs. Acute Hospital Readmission Rate by county.}
+    \label{fig:hba1c_readmit}
+\end{figure}
 
 
-\subsection[Unsupervised Learning]{Unsupervised Learning \\ \small{Notebook 3}}
-For unsupervised learning, we utilized the dataset created in Section \ref{meth_sanitize}. After cutting the available data to only rows from 2023, we reshaped the data to one row per county and one column per measure. Any measures reported in less than 30\% of all counties and counties that reported in less than 20\% of all measures were removed from the data in order to ensure consistent clustering.
+\subsection[Unsupervised Learning]{Unsupervised Learning \\ \small{Notebook 3}} \label{meth_unsup}
+For unsupervised learning, we utilized the dataset created in Section \ref{meth_sanitize}. After cutting the available data to only rows from 2023, we reshaped the data to one row per county and one column per measure. Any measures reported in less than 30\% of all counties and counties that reported in less than 20\% of all measures were removed from the data in order to ensure consistent clustering. In addition, we also imputed missing values and standardized column values.
 
-\subsection[Supervised Learning]{Supervised Learning \\ \small{Notebooks 4 \& 5}}
+To determine if all dimensions from county performance profiles are needed, we performed a \textbf{P}rimary \textbf{C}omponent \textbf{A}nalysis (PCA) to see how many components carry a combined total of 90\% of the variance. After removing low variance components, we calculated silhouette scores ($2 \le k \le 10$) to find the ideal cluster number. With our optimized $k$ value, we clustered the data and evaluated patient outcomes from each cluster.
+
+\subsection[Supervised Learning]{Supervised Learning \\ \small{Notebooks 4 \& 5}} \label{meth_sup}
+For supervised learning, we again utilized the dataset created in Section \ref{meth_sanitize} and cut the DataFrame to only entries from 2023. We used a similar method of reducing the number of counties and measures present, but chose to calculate the surviving measures after accounting for the number of valid counties (instead of simultaneously). This resulted in about 2,500 remaining counties in the dataset.
+
+We applied three different data leakage guards before analyzing data for supervised learning: circular measures, sibling strata, and identity features. Circular measures were ones that generally indicated an almost guaranteed readmission, such as "readmission" or "admission." Sibling strata were functionally duplicate constructs that could skew the final results. Finally, identity features were features that only shaped the CV folds but didn't functionally affect the data.
+
+After leakage prevention, we used inverse measures indicated in the data to determine if MIPS created a noticeable increment in our outcome measures (while controlling for variables like race). We trained multiple supervised learning models on our data (including LinearRegression, RandomForestClassifier, and others) and used GroupKFold with \texttt{state} as our grouping variable to validate the models we trained. Finally, we compared the performance of different combinations of model, features, and targets to select the optimal combination.
+
 
 \section{Results}
 
 \subsection[Exploratory Data Analysis (EDA)]{Exploratory Data Analysis (EDA) \\ \small{Notebook 2}}
 
 \subsection[Unsupervised Learning]{Unsupervised Learning \\ \small{Notebook 3}}
+We found that 55 of 229 measures had coverage above 30\%, while 1400 of 2955 counties had measures above 20\%. Figure \ref{fig:meas_count} shows that the distributions of both measures and counties were skewed right, and that several measures and counties did not meet our selected thresholds.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/measure_county_coverage.png}
+    \caption{Measure coverage across counties and county coverage across measures.}
+    \label{fig:meas_count}
+\end{figure}
+
+Our PCA showed us that we needed 41 components to reach 90\% variance (across 55 remaining measures). Based on those 41 components, our highest silhouette score was 0.096, with $k=2$. Finally, after clustering, we found that 28 of 44 measured outcomes differed significantly ($p < 0.05$) between the two clusters.
+
 
 \subsection[Supervised Learning]{Supervised Learning \\ \small{Notebooks 4 \& 5}}
+We evaluated two targets (Readmission percentage and standardized cost per capita), four models (Linear OLS, Elastic Net, Random Forest, and Gradient Boosting), and two features (control features only and control features with MIPS). Combined with a baseline evaluation, this created 18 total combinations, whose results can be found in Table \ref{tab:model_perf}. 
+
+\begin{table}[H]
+\centering
+\begin{tabular}{llrrrr}
+\toprule
+Target & Model & Features & $R^2$ (mean) & $R^2$ (sd) & MAE \\
+\midrule
+\multirow{9}{*}{Readmission \%}
+ & Baseline (mean)   & Ctrl only      & -0.034 & 0.049 & 0.0217 \\
+ & Linear (OLS)      & Ctrl only      &  0.126 & 0.053 & 0.0197 \\
+ & Elastic Net       & Ctrl only      &  0.130 & 0.050 & 0.0197 \\
+ & Random Forest     & Ctrl only      &  0.143 & 0.083 & 0.0193 \\
+ & Gradient Boosting & Ctrl only      &  0.082 & 0.095 & 0.0200 \\
+ & Linear (OLS)      & Ctrl + MIPS    &  0.117 & 0.066 & 0.0196 \\
+ & Elastic Net       & Ctrl + MIPS    &  0.147 & 0.047 & 0.0193 \\
+ & Random Forest     & Ctrl + MIPS    &  0.157 & 0.074 & 0.0191 \\
+ & Gradient Boosting & Ctrl + MIPS    &  0.102 & 0.081 & 0.0197 \\
+\midrule
+\multirow{9}{*}{Std. cost per capita}
+ & Baseline (mean)   & Ctrl only      & -0.105 & 0.123 & 1321.81 \\
+ & Linear (OLS)      & Ctrl only      &  0.027 & 0.289 & 1246.68 \\
+ & Elastic Net       & Ctrl only      &  0.031 & 0.264 & 1244.63 \\
+ & Random Forest     & Ctrl only      &  0.147 & 0.229 & 1163.34 \\
+ & Gradient Boosting & Ctrl only      &  0.100 & 0.224 & 1184.42 \\
+ & Linear (OLS)      & Ctrl + MIPS    & -0.010 & 0.282 & 1274.08 \\
+ & Elastic Net       & Ctrl + MIPS    &  0.059 & 0.270 & 1230.13 \\
+ & Random Forest     & Ctrl + MIPS    &  0.178 & 0.207 & 1145.74 \\
+ & Gradient Boosting & Ctrl + MIPS    &  0.162 & 0.227 & 1151.50 \\
+\bottomrule
+\end{tabular}
+\caption{Cross-validated model performance by target and feature set.}
+\label{tab:model_perf}
+\end{table}
+
+We found that Elastic Net was the model that most consistently increased $R^2$ values before and after considering MIPS (see Figure \ref{fig:r2}). 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/sl_delta_r2.png}
+    \caption{$R^2$ values with and without MIPS.}
+    \label{fig:r2}
+\end{figure}
+
 \section{Discussion}
 % Translation
 \subsection[Exploratory Data Analysis (EDA)]{Exploratory Data Analysis (EDA) \\ \small{Notebook 2}}
 
 \subsection[Unsupervised Learning]{Unsupervised Learning \\ \small{Notebook 3}}
+Our PCA showed us that we needed 41 components to reach 90\% variance (across 55 remaining measures). These findings tell us that MIPS is not dominated by a single axis or component. Based on those 41 components, our highest silhouette score was 0.096, with $k=2$. This silhouette score is comparatively low, meaning that the counties do not form distinct performance clusters (in the case of 2 clusters, a "high" performance cluster and a "low performance" cluster). These two findings suggest that MIPS is not easily defined by one or two measures or in a binary matter, and instead exists on a continuum of performance. In essence, our findings suggest that it is difficult to predict MIPS performance based on minimal feature information, and almost all of the significant features must be considered.
+
+After clustering, we found that 28 of 44 measured outcomes differed significantly ($p < 0.05$) between the two clusters. We found that the biggest differentiators in MIPS scores were utilization and cost measures, such as standardized payments for tests, home health payments, and DME costs. In contrast, measures like readmission and ER visits had lower separation measurements. This suggests that overall MIPS performance is more closely aligned with practice patterns over time and effective resource use rather than patient-level clinical events.
 
 \subsection[Supervised Learning]{Supervised Learning \\ \small{Notebooks 4 \& 5}}
+Even with Elastic Net showing the most consistently increased $R^2$ values (when compared to the other models), our findings did not suggest a strong difference between county controls only and county controls combined with MIPS. When we added 2022 readmission rates as a control, the MIPS contribution to $R^2$ scores largely disappeared as well. Ultimately, we found that a small, borderline association exists that is robust to demographic/specialty controls (but is functionally absorbed by a county’s own prior-year readmission rate). 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/sl_residual_choropleth.png}
+    \caption{Prediction residuals based on county.}
+    \label{fig:choropleth}
+\end{figure}
 
 \subsection{Other}
 
 \section{Future Work}
 % Broader Impacts
-While our findings did not find a strong correlation between MIPS and patient outcomes, there are still opportunities for future work.
+While our findings did not suggest a strong correlation between MIPS and patient outcomes, there are still opportunities for future work. We could re-run our analysis with different county and measure cutoffs to see if the effects are similar. Another potential path for future work is more granular analysis (i.e., closer than the county level). Counties do not account for population density, so finding a more granular way to compare population centers could yield different results as well.
 
 \section{Statement of Work}
 % Statement of Work
