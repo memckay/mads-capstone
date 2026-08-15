@@ -20,7 +20,7 @@
 
 \section{Abstract}
 % Project Statement
-Established by Centers for Medicare \& Medicaid Services, the \textbf{M}erit-based \textbf{I}ncentive \textbf{P}ayment \textbf{S}ystem (MIPS) is a system designed to transition Medicare clinicians towards a value-based care system \cite{Lin2025Merit-BasedYears}. Given the strong financial incentives present for clinicians to best mimic the behavior MIPS rewards, it is in Medicare users’ benefit for as strong a correlation between high MIPS scores and positive patient outcomes as possible. We downloaded three separate data files \cite{2023PYAttestations, 2026MedicareCounty, 2023DoctorsFile} to evaluate correlation between MIPS scores and various patient outcomes. We combined all three files into one DataFrame using a series of left joins and data sanitization, then performed supervised and unsupervised learning analyses. After unsupervised and supervised machine learning analysis, our findings suggested that  it is difficult to predict MIPS performance based on minimal feature information, and almost all of the significant features must be considered. We also found that a small, borderline association exists that is robust to demographic/specialty controls (but is functionally absorbed by a county’s own prior-year readmission rate). Future work could include re-evaluation using different county and measure cutoffs or more granular population divisions.
+Established by Centers for Medicare \& Medicaid Services, the \textbf{M}erit-based \textbf{I}ncentive \textbf{P}ayment \textbf{S}ystem (MIPS) is a system designed to transition Medicare clinicians towards a value-based care system \cite{Lin2025Merit-BasedYears}. Given the strong financial incentives present for clinicians to best mimic the behavior MIPS rewards, it is in Medicare users’ benefit for as strong a correlation between high MIPS scores and positive patient outcomes as possible. We downloaded three separate data files \cite{2023PYAttestations, 2026MedicareCounty, 2023DoctorsFile} to determine if MIPS predicts various patient outcomes. We combined all three files into one DataFrame using a series of left joins and data sanitization, then performed supervised and unsupervised learning analyses. After unsupervised and supervised machine learning analysis, our findings suggested that  it is difficult to use MIPS to predict performance based on minimal feature information, and almost all of the significant features must be considered. We also found that a small, borderline association exists that is robust to demographic/specialty controls (but is functionally absorbed by a county’s own prior-year readmission rate). Future work could include re-evaluation using different county and measure cutoffs or more granular population divisions.
 
 \section{Introduction}
 
@@ -64,11 +64,11 @@ For unsupervised learning, we utilized the dataset created in Section \ref{meth_
 To determine if all dimensions from county performance profiles are needed, we performed a \textbf{P}rimary \textbf{C}omponent \textbf{A}nalysis (PCA) to see how many components carry a combined total of 90\% of the variance. After removing low variance components, we calculated silhouette scores ($2 \le k \le 10$) to find the ideal cluster number. With our optimized $k$ value, we clustered the data and evaluated patient outcomes from each cluster.
 
 \subsection[Supervised Learning]{Supervised Learning \\ \small{Notebooks 4 \& 5}} \label{meth_sup}
-For supervised learning, we again utilized the dataset created in Section \ref{meth_sanitize} and cut the DataFrame to only entries from 2023. We used a similar method of reducing the number of counties and measures present, but chose to calculate the surviving measures after accounting for the number of valid counties (instead of simultaneously). This resulted in about 2,500 remaining counties in the dataset.
+For supervised learning, we again utilized the dataset created in Section \ref{meth_sanitize} and cut the DataFrame to only entries from 2023. We used a similar method of reducing the number of counties and measures present, but chose to calculate the surviving measures after accounting for the number of valid counties (instead of simultaneously). This left an analytic frame of 2,507 counties and 49 measures. The readmission models are fitted on the 2,458 counties with a published readmission rate.
 
-We applied three different data leakage guards before analyzing data for supervised learning: circular measures, sibling strata, and identity features. Circular measures were ones that generally indicated an almost guaranteed readmission, such as "readmission" or "admission." Sibling strata were functionally duplicate constructs that could skew the final results. Finally, identity features were features that only shaped the CV folds but didn't functionally affect the data.
+We applied three different data leakage guards before analyzing data for supervised learning: circular measures, sibling strata, and identity features. Circular measures are those whose construction overlaps with admissions, readmissions, or complications and therefore shares arithmetic with the outcome. Sibling strata are near duplicate versions of the same construct, which would otherwise let one clinical concept enter the model several times. Identity features are geographic keys such as state and county FIPS; state defines the cross-validation folds but is excluded from the feature matrix so the model cannot learn a region directly. Of the 55 measures clearing the coverage filter, this screen removes six, leaving 49.
 
-After leakage prevention, we used inverse measures indicated in the data to determine if MIPS created a noticeable increment in our outcome measures (while controlling for variables like race). We trained multiple supervised learning models on our data (including LinearRegression, RandomForestClassifier, and others) and used GroupKFold with \texttt{state} as our grouping variable to validate the models we trained. Finally, we compared the performance of different combinations of model, features, and targets to select the optimal combination.
+Six measures are flagged in the source as inverse, where a higher raw value means worse performance. Their coefficients are sign adjusted at display time so that all results read as one standard deviation of better performance. The MIPS increment is measured separately as the difference in cross-validated $R^2$ between models fitted with county controls alone and with controls plus the 49 MIPS measures. We trained multiple supervised learning models on our data (LinearRegression, ElasticNetCV, RandomForestRegressor, and GradientBoostingRegressor) and used GroupKFold with \texttt{state} as our grouping variable to validate the models we trained. Finally, we compared the performance of different combinations of model, features, and targets to select the optimal combination.
 
 
 \section{Results}
@@ -133,6 +133,32 @@ We found that Elastic Net was the model that most consistently increased $R^2$ v
     \label{fig:r2}
 \end{figure}
 
+The Elastic Net MIPS increment is +0.017 $R^2$, with a 95\% confidence interval of approximately [-0.000, +0.035] (paired $t(4) = 2.78, p = .050$). We quote Elastic Net rather than the largest gain because its increment is positive in all five held out folds; gradient boosting gains more (+0.020) but in only two of five.
+
+Most of the gain is reporting behavior. Replacing the MIPS values with indicators recording only whether a county reported each measure recovers 81.6\% of the gradient boosting lift (controls .082 $R^2$, reporting indicators .099, actual values .102).
+
+The association is stronger backwards in time. Using the same 2023 MIPS data against outcomes from adjacent years gives MIPS increments of +.043 for 2022, +.020 for 2023, and +.019 for 2024. Since 2023 performance cannot affect 2022 readmissions, this pattern points more toward persistent county characteristics than an effect of MIPS.
+
+Outcome history absorbs the increment. On the 2,444 counties with a prior year readmission rate, MIPS alone adds +.006 R² while the prior year rate alone adds +.227. With both in the model, the MIPS increment falls to +.002.
+
+A 70\% county-coverage floor leaves 16 of 49 measures eligible for individual testing. Three survive Benjamini-Hochberg (BH) correction: HbA1c poor control (Q001, -0.0029, $q = .007$), cervical cancer screening (Q309, -0.0023, $q = .007$), and breast cancer screening (Q112, -0.0022, $q = .037$). All point in the same direction, with better county performance associated with fewer readmissions.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/sl_top_measures_ci.png}
+    \caption{Remaining 16 measures with associated 95\% confidence intervals.}
+    \label{fig:ci}
+\end{figure}
+
+Model residuals are spatially autocorrelated (Moran's I = +0.199, permutation $p = .001$). All three measures still clear correction under Conley spatial HAC standard errors. Under census-division clustering, which uses only nine clusters and is correspondingly conservative, one remains significant.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/sl_spatial_forest.png}
+    \caption{Remaining measures after correction.}
+    \label{fig:spatial_forest}
+\end{figure}
+
 \section{Discussion}
 % Translation
 \subsection[Exploratory Data Analysis (EDA)]{Exploratory Data Analysis (EDA) \\ \small{Notebook 2}}
@@ -143,7 +169,11 @@ Our PCA showed us that we needed 41 components to reach 90\% variance (across 55
 After clustering, we found that 28 of 44 measured outcomes differed significantly ($p < 0.05$) between the two clusters. We found that the biggest differentiators in MIPS scores were utilization and cost measures, such as standardized payments for tests, home health payments, and DME costs. In contrast, measures like readmission and ER visits had lower separation measurements. This suggests that overall MIPS performance is more closely aligned with practice patterns over time and effective resource use rather than patient-level clinical events.
 
 \subsection[Supervised Learning]{Supervised Learning \\ \small{Notebooks 4 \& 5}}
-Even with Elastic Net showing the most consistently increased $R^2$ values (when compared to the other models), our findings did not suggest a strong difference between county controls only and county controls combined with MIPS. When we added 2022 readmission rates as a control, the MIPS contribution to $R^2$ scores largely disappeared as well. Ultimately, we found that a small, borderline association exists that is robust to demographic/specialty controls (but is functionally absorbed by a county’s own prior-year readmission rate). 
+County aggregated MIPS appears to be too thin to carry a reliable regional quality signal. Half of all county measure cells rest on a single reporting practice (52.0\%) and two-thirds on two or fewer (69.2\%), so a county's score is often one practice's number standing in for the whole county. The fact that reporting indicators alone recover most of the model's gain follows directly: the models were substantially learning which counties participate rather than how well anyone performs.
+
+The temporal pattern reinforces this. An association twice as strong against outcomes preceding the performance year as against those following it is not consistent with MIPS improving care and is consistent with stable county characteristics. Prediction residuals remain spatially clustered as well, which is what we would expect if regional factors outside the model drive much of the variation.
+
+These are county level associations and they say nothing about MIPS at the individual practice level where the program operates. Practices are weighted by ZIP-to-county allocation rather than patient volume. Coverage filtering retains counties with more complete reporting, which may affect how representative the analyzed counties are.
 
 \begin{figure}[H]
     \centering
