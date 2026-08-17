@@ -29,10 +29,13 @@ Established by Centers for Medicare \& Medicaid Services, the \textbf{M}erit-bas
 
 MIPS data is available to the public and freely downloadable \cite{2023PYAttestations}, meaning evaluations of the system’s efficacy can be performed. Given the strong financial incentives present for clinicians to best mimic the behavior MIPS rewards, it is in Medicare users’ benefit for as strong a correlation between high MIPS scores and positive patient outcomes as possible. This is especially relevant as MIPS is designed to be a budget-neutral program \cite{Gettel2022TheSystem}, meaning that their reimbursement is affected not only by their performance, but by other physicians' performance as well (one physician's increase in funding is paid for by another's decrease).
 
+Furthermore, Lin et. al. state that "safety-net specialists did not achieve greater cumulative financial rewards due to MIPS's percentage-based adjustment structure, which disadvantages clinicians with smaller billing volumes" \cite{Lin2025Merit-BasedYears}. MIPS provides incentives for physicians to pursue certain kinds of treatments for their patients, but what if a patient needs treatment that MIPS doesn't reward? In essence, we aim to explore whether MIPS is financially incentivizing physician behavior that creates better short- and long-term outcomes for patients.
+
 In order to measure MIPS, we utilized two other data sources. Our second source was a regional database of patient outcomes \cite{2026MedicareCounty}. This data source has multiple methods of measuring patient health outcomes, and provides a way for us to determine if there exists a strong correlation between those outcomes and MIPS scores. Our final source was a database of doctors and physicians enrolled with Medicare \cite{2023DoctorsFile}. This data source (referred to later as the "DAC") acts as the "bridge" between the first two data sources, allowing us to combine all three into one source for analysis.
 
 \subsection{Outcome Evaluation}
 % Evaluation Strategy
+Success was defined as whether county aggregated MIPS improves out of sample prediction of county Medicare outcomes beyond what county characteristics already explain. The primary outcome is the 2023 county 30 day all cause readmission rate, with standardized Medicare payment per capita as a secondary outcome. Models are scored on states held out from training, and a mean predictor provides the baseline, so the comparison of interest is the change in cross validated performance when MIPS measures are added to county controls alone. We also treat robustness as part of the evaluation rather than an afterthought, reporting fold consistency, an ablation replacing MIPS values with reporting indicators, outcomes from adjacent years, a prior year outcome control, and per measure inference under a coverage floor with multiple testing correction.
 
 \section{Methods}
 % Methodology
@@ -40,7 +43,7 @@ In order to measure MIPS, we utilized two other data sources. Our second source 
 All Python work was split between five Jupyter notebook files. Data Collection (Section \ref{meth_collect}) was completed in Notebook 1. Data Sanitization (Section \ref{meth_sanitize}) and Exploratory Data Analysis (Section \ref{meth_eda}) were completed in Notebook 2. Unsupervised Learning (Section \ref{meth_unsup}) was completed in Notebook 3. Supervised Learning (Section \ref{meth_sup}) was completed in Notebooks 4 and 5.
 
 \subsection[Data Collection]{Data Collection \\ \small{Notebook 1}} \label{meth_collect}
-In Notebook 1, we loaded all three data sources into separate DataFrame objects. We also aligned the \texttt{org\_pac\_id} column in the DAC dataframe with ZIP codes to assist with Data Sanitization (Section \ref{meth_sanitize}) later on.
+In Notebook 1, we loaded and evaluated our 3 files to assess for missingness, basic data structure, column names to ensure we would be able to merge files reliably. We determined there was a significant percentage of physician groups that had more than one zip code and thus needed to devise a strategy to handle. We determined the files were complete when evaluating the features and variables of interest. We confirmed the files contain the data necessary to merge and evaluate group level performance with regional health outcomes. We were able to determine that some performance measures were inverse meaning lower scores are better.
 
 \subsection[Data Sanitization]{Data Sanitization \\ \small{Notebook 2}} \label{meth_sanitize}
 In Notebook 2, we loaded our three data sources from Data Collection (Section \ref{meth_collect}). After loading, we adjusted column names and ZIP code values to prepare for joining all three DataFrames into one DataFrame. We used a left join to combine the MIPS and DAC into one DataFrame object. After standardizing ZIP codes and other small adjustments, we used another left join to add the final patient outcomes DataFrame to create the final DataFrame.
@@ -59,16 +62,16 @@ As part of our \textbf{E}xploratory \textbf{D}ata \textbf{A}nalysis (EDA), we lo
 
 
 \subsection[Unsupervised Learning]{Unsupervised Learning \\ \small{Notebook 3}} \label{meth_unsup}
-For unsupervised learning, we utilized the dataset created in Section \ref{meth_sanitize}. After cutting the available data to only rows from 2023, we reshaped the data to one row per county and one column per measure. Any measures reported in less than 30\% of all counties and counties that reported in less than 20\% of all measures were removed from the data in order to ensure consistent clustering. In addition, we also imputed missing values and standardized column values.
+For unsupervised learning, we utilized the dataset created in Section \ref{meth_sanitize}. After restricting the available data to rows from 2023, we reshaped the data to one row per county and one column per MIPS measure. Measures reported in fewer than 30\% of counties were removed, followed by counties reporting fewer than 20\% of the remaining measures. This filtering was performed to reduce sparsity and improve the consistency of the data used for clustering. Missing values in the retained matrix were then median imputed, and all measures were standardized prior to dimensionality reduction and clustering.
 
-To determine if all dimensions from county performance profiles are needed, we performed a \textbf{P}rimary \textbf{C}omponent \textbf{A}nalysis (PCA) to see how many components carry a combined total of 90\% of the variance. After removing low variance components, we calculated silhouette scores ($2 \le k \le 10$) to find the ideal cluster number. With our optimized $k$ value, we clustered the data and evaluated patient outcomes from each cluster.
+To determine how many dimensions were needed to represent county MIPS performance profiles, we performed Principal Component Analysis (PCA). We retained the minimum number of principal components required to explain at least 90\% of cumulative variance. Using these retained components, we calculated silhouette scores for K-means clustering with values of $k$ ranging from 2 through 10. We selected the value of $k$ with the highest silhouette score and applied K-means clustering using that value. We then compared Medicare geographic outcomes across the resulting MIPS derived clusters using Kruskal Wallis tests.
 
 \subsection[Supervised Learning]{Supervised Learning \\ \small{Notebooks 4 \& 5}} \label{meth_sup}
-For supervised learning, we again utilized the dataset created in Section \ref{meth_sanitize} and cut the DataFrame to only entries from 2023. We used a similar method of reducing the number of counties and measures present, but chose to calculate the surviving measures after accounting for the number of valid counties (instead of simultaneously). This left an analytic frame of 2,507 counties and 49 measures. The readmission models are fitted on the 2,458 counties with a published readmission rate.
+For supervised learning, we again utilized the dataset created in Section \ref{meth_sanitize} and cut the DataFrame to only entries from 2023. We applied the same 30\% measure and 20\% county coverage thresholds as the unsupervised analysis, with one deliberate difference: the county threshold is computed over the 55 surviving measures rather than all 229. Since most of the 229 measures are reported by very few counties, requiring 20\% coverage across all 229 would be a substantially stricter threshold. Computing coverage over the surviving measures instead retains more counties, at the cost of a higher share of imputed cells. This left an analytic frame of 2,507 counties and 49 measures. The readmission models are fitted on the 2,458 counties with a published readmission rate.
 
 We applied three different data leakage guards before analyzing data for supervised learning: circular measures, sibling strata, and identity features. Circular measures are those whose construction overlaps with admissions, readmissions, or complications and therefore shares arithmetic with the outcome. Sibling strata are near duplicate versions of the same construct, which would otherwise let one clinical concept enter the model several times. Identity features are geographic keys such as state and county FIPS; state defines the cross-validation folds but is excluded from the feature matrix so the model cannot learn a region directly. Of the 55 measures clearing the coverage filter, this screen removes six, leaving 49.
 
-Six measures are flagged in the source as inverse, where a higher raw value means worse performance. Their coefficients are sign adjusted at display time so that all results read as one standard deviation of better performance. The MIPS increment is measured separately as the difference in cross-validated $R^2$ between models fitted with county controls alone and with controls plus the 49 MIPS measures. We trained multiple supervised learning models on our data (LinearRegression, ElasticNetCV, RandomForestRegressor, and GradientBoostingRegressor) and used GroupKFold with \texttt{state} as our grouping variable to validate the models we trained. Finally, we compared the performance of different combinations of model, features, and targets to select the optimal combination.
+Six measures are flagged in the source as inverse, where a higher raw value means worse performance. Their coefficients are sign adjusted at display time so that all results are expressed per one standard deviation of better performance. The MIPS increment is measured separately as the difference in cross-validated $R^2$ between models fitted with county controls alone and with controls plus the 49 MIPS measures. We trained multiple supervised learning models on our data (LinearRegression, ElasticNetCV, RandomForestRegressor, and GradientBoostingRegressor) and used GroupKFold with \texttt{state} as our grouping variable to validate the models we trained. Finally, we compared the performance of different combinations of model, features, and targets to select the optimal combination.
 
 
 \section{Results}
@@ -76,7 +79,7 @@ Six measures are flagged in the source as inverse, where a higher raw value mean
 \subsection[Exploratory Data Analysis (EDA)]{Exploratory Data Analysis (EDA) \\ \small{Notebook 2}}
 
 \subsection[Unsupervised Learning]{Unsupervised Learning \\ \small{Notebook 3}}
-We found that 55 of 229 measures had coverage above 30\%, while 1400 of 2955 counties had measures above 20\%. Figure \ref{fig:meas_count} shows that the distributions of both measures and counties were skewed right, and that several measures and counties did not meet our selected thresholds.
+Of the 229 available MIPS measures, 55 had coverage in at least 30\% of counties. After applying the county coverage threshold, 1,400 of 2,955 counties reported at least 20\% of the retained measures and remained in the clustering dataset. Figure \ref{fig:meas_count} shows that coverage was uneven across both measures and counties, with substantial numbers falling below the selected thresholds.
 
 \begin{figure}[H]
     \centering
@@ -85,8 +88,9 @@ We found that 55 of 229 measures had coverage above 30\%, while 1400 of 2955 cou
     \label{fig:meas_count}
 \end{figure}
 
-Our PCA showed us that we needed 41 components to reach 90\% variance (across 55 remaining measures). Based on those 41 components, our highest silhouette score was 0.096, with $k=2$. Finally, after clustering, we found that 28 of 44 measured outcomes differed significantly ($p < 0.05$) between the two clusters.
+PCA showed that 41 principal components were required to explain at least 90\% of the cumulative variance across the 55 retained measures. Using these 41 components, the highest silhouette score across $2 \leq k \leq 10$ was 0.096 at $k = 2$. The resulting K-means solution contained two imbalanced clusters consisting of 445 and 955 counties.
 
+Despite the weak separation between clusters, 28 of 44 Medicare geographic outcomes differed between the two clusters at an unadjusted significance threshold of ($p < 0.05$) using Kruskal Wallis tests. The strongest differences involved utilization and cost measures, including standardized payments for tests, home health payments, durable medical equipment costs, and FQHC/RHC visits. Acute outcomes such as hospital readmission and emergency room utilization showed weaker separation between clusters.
 
 \subsection[Supervised Learning]{Supervised Learning \\ \small{Notebooks 4 \& 5}}
 We evaluated two targets (Readmission percentage and standardized cost per capita), four models (Linear OLS, Elastic Net, Random Forest, and Gradient Boosting), and two features (control features only and control features with MIPS). Combined with a baseline evaluation, this created 18 total combinations, whose results can be found in Table \ref{tab:model_perf}. 
@@ -146,7 +150,7 @@ A 70\% county-coverage floor leaves 16 of 49 measures eligible for individual te
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.95\textwidth]{figures/sl_top_measures_ci.png}
-    \caption{Remaining 16 measures with associated 95\% confidence intervals.}
+    \caption{The 12 largest of the 16 measures clearing the 70\% coverage floor, with 95\% intervals. Blue indicates the three measures that survive BH correction.}
     \label{fig:ci}
 \end{figure}
 
@@ -155,7 +159,7 @@ Model residuals are spatially autocorrelated (Moran's I = +0.199, permutation $p
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.95\textwidth]{figures/sl_spatial_forest.png}
-    \caption{Remaining measures after correction.}
+    \caption{The three surviving measures under three approaches to estimating uncertainty: state clustered standard errors, Conley spatial HAC, and census division clustering.}
     \label{fig:spatial_forest}
 \end{figure}
 
@@ -164,9 +168,13 @@ Model residuals are spatially autocorrelated (Moran's I = +0.199, permutation $p
 \subsection[Exploratory Data Analysis (EDA)]{Exploratory Data Analysis (EDA) \\ \small{Notebook 2}}
 
 \subsection[Unsupervised Learning]{Unsupervised Learning \\ \small{Notebook 3}}
-Our PCA showed us that we needed 41 components to reach 90\% variance (across 55 remaining measures). These findings tell us that MIPS is not dominated by a single axis or component. Based on those 41 components, our highest silhouette score was 0.096, with $k=2$. This silhouette score is comparatively low, meaning that the counties do not form distinct performance clusters (in the case of 2 clusters, a "high" performance cluster and a "low performance" cluster). These two findings suggest that MIPS is not easily defined by one or two measures or in a binary matter, and instead exists on a continuum of performance. In essence, our findings suggest that it is difficult to predict MIPS performance based on minimal feature information, and almost all of the significant features must be considered.
+Our PCA results showed that 41 principal components were required to explain 90\% of the variance across the 55 retained MIPS measures. This indicates that variation in county MIPS performance profiles is distributed across many dimensions rather than being concentrated in one or two dominant components. Consequently, MIPS performance profiles cannot be adequately characterized using only a small number of dimensions.
 
-After clustering, we found that 28 of 44 measured outcomes differed significantly ($p < 0.05$) between the two clusters. We found that the biggest differentiators in MIPS scores were utilization and cost measures, such as standardized payments for tests, home health payments, and DME costs. In contrast, measures like readmission and ER visits had lower separation measurements. This suggests that overall MIPS performance is more closely aligned with practice patterns over time and effective resource use rather than patient-level clinical events.
+The best K means solution occurred at $k = 2$, but its silhouette score of 0.096 was low. This indicates substantial overlap between the two clusters and suggests that counties do not form clearly separated MIPS performance archetypes. The clusters were also imbalanced, with 445 counties in one cluster and 955 in the other. Taken together with the PCA findings, these results suggest that county MIPS performance varies more along a multidimensional continuum than as a small number of clearly separable groups.
+
+Despite the weak cluster separation, 28 of 44 Medicare geographic outcomes differed between the two MIPS derived clusters at an unadjusted $p < 0.05$ threshold. The strongest differences were observed in utilization and cost measures, including standardized payments for tests, home health payments, durable medical equipment costs, and FQHC/RHC visits. In contrast, acute clinical outcomes such as readmission and emergency room utilization showed weaker separation. These findings suggest that differences in county MIPS performance profiles are more closely associated with practice patterns and resource utilization than with patient level acute clinical events.
+
+Several limitations should be considered when interpreting these findings. Approximately 53\% of counties with MIPS data were excluded because they did not meet the minimum coverage threshold, meaning that the clustering results apply only to counties with sufficiently complete MIPS reporting. In addition, median imputation was required for approximately 20\% of values in the retained county by measure matrix, which may reduce true differences between counties. Finally, the analysis is observational and cross sectional, using 2023 MIPS data and 2023 geographic outcomes, so the observed differences between clusters should be interpreted as associations rather than evidence of causal relationships.
 
 \subsection[Supervised Learning]{Supervised Learning \\ \small{Notebooks 4 \& 5}}
 County aggregated MIPS appears to be too thin to carry a reliable regional quality signal. Half of all county measure cells rest on a single reporting practice (52.0\%) and two-thirds on two or fewer (69.2\%), so a county's score is often one practice's number standing in for the whole county. The fact that reporting indicators alone recover most of the model's gain follows directly: the models were substantially learning which counties participate rather than how well anyone performs.
@@ -199,6 +207,13 @@ Each team member contributed equally to the overall project. Each member also se
   \item Zach Sletten: Data Sanitization/EDA
   \item Justin Tseng: Report Composition/Aggregation
 \end{itemize}
+
+\section{AI Usage Statement}
+Claude Code with Opus 4.8 was utilized throughout the supervised and unsupervised learning portion of the project as a development and review tool. It was first used to support understanding of MIPS terminology, program background, and concepts relevant to interpreting the data and analysis. ChatGPT Codex 0.147.0 was used to assist with understanding file library/dictionary, development and review tool as well.
+
+Previous project milestones were then provided as context so that established notebook organization, visual structure, and formatting conventions could be carried forward consistently. This reduced time spent recreating formatting and helped maintain a professional University of Michigan themed color palette with accessibility considerations incorporated into the visual design.
+
+The tools also supported coding, debugging, proofreading within notebook cells, and review of the analysis for possible gaps or additional considerations.
 
 \newpage
 \bibliography{references.bib}
