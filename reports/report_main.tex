@@ -38,6 +38,8 @@ In order to measure MIPS, we utilized two other data sources. Our second source 
 % Evaluation Strategy
 Success was defined as whether county aggregated MIPS improves out of sample prediction of county Medicare outcomes beyond what county characteristics already explain. The primary outcome is the 2023 county 30 day all cause readmission rate, with standardized Medicare payment per capita as a secondary outcome. Models are scored on states held out from training, and a mean predictor provides the baseline, so the comparison of interest is the change in cross-validated performance when MIPS measures are added to county controls alone. We then tested whether that gain held across those states, and whether it remained if we used reporting instead of scores. We also checked adjacent years and the prior year's readmission rate. Finally, we asked whether any single measures still stood out after a coverage floor and a multiple testing correction.
 
+\newpage
+
 \section{Methods}
 % Methodology
 % Technical Depth
@@ -47,9 +49,11 @@ All Python work was split between five Jupyter notebook files. Data Collection (
 In Notebook 1, we loaded and evaluated our 3 files to assess for missingness, basic data structure, column names to ensure we would be able to merge files reliably. We determined there was a significant percentage of physician groups that had more than one zip code and thus needed to devise a strategy to handle. We determined the files were complete when evaluating the features and variables of interest. We confirmed the files contain the data necessary to merge and evaluate group level performance with regional health outcomes. We were able to determine that some performance measures were inverse meaning lower scores are better.
 
 \subsection[Data Sanitization]{Data Sanitization \\ \small{Notebook 2}} \label{meth_sanitize}
-In Notebook 2, we loaded our three data sources from Data Collection (Section \ref{meth_collect}). After loading, we adjusted column names and ZIP code values to prepare for joining all three DataFrames into one DataFrame. We used a left join to combine the MIPS and DAC into one DataFrame object. After standardizing ZIP codes and other small adjustments, we used another left join to add the final patient outcomes DataFrame to create the final DataFrame.
+We discovered that 35.8\% of physician groups operated in more than one ZIP code, making it necessary to device a strategy to handle the overloap. MIPS results were connected to practice locations through the DAC directory, which was reduced to 227,313 unique organization ZIP pairs. Organization identifiers and ZIP codes were standardized before joining the datasets. 
 
-After the consecutive left joins, we continued to sanitize our data. We standardized ZIP codes and converted MIPS performance metrics to a numeric scale, and also made further adjustments to accommodate the patient outcome DataFrame being at the county level only. Once sanitization was complete, we eliminated columns that were deemed unnecessary for the next steps of EDA, supervised learning, and unsupervised learning.
+Approximately 2.27\% of records lacked a usable ZIP after joining MIPS and DAC and could not be geographically assigned. The remaining ZIP codes were mapped to county FIPS codes. For ZIP codes spanning multiple counties, we used the crosswalk’s "tot\_ratio" to allocate a share of the ZIP level data to each county based on the percentage of addresses located there. The weighted contributions were normalized by the total allocation weight to produce comparable county level performance rates. After records without ZIP codes had been excluded, only 0.05\% of the remaining records lacked a county match. County performance was then aggregated separately for each MIPS measure and joined to county level Medicare outcomes for subsequent modeling.
+
+This technique estimates the geographic distribution of group performance from practice address patterns, but it does not represent patient volume across counties.
 
 \subsection[Exploratory Data Analysis (EDA)]{Exploratory Data Analysis (EDA) \\ \small{Notebook 2}} \label{meth_eda}
 As part of our \textbf{E}xploratory \textbf{D}ata \textbf{A}nalysis (EDA), we looked for a correlation between better HbA1c control (a patient metric used to diagnose diabetes) and patient readmission rate (see Figure \ref{fig:hba1c_readmit}).
@@ -60,6 +64,8 @@ As part of our \textbf{E}xploratory \textbf{D}ata \textbf{A}nalysis (EDA), we lo
     \caption{HbA1c vs. Acute Hospital Readmission Rate by county.}
     \label{fig:hba1c_readmit}
 \end{figure}
+
+For Figure \ref{fig:hba1c_readmit}, HbA1c was an inverse measure, so higher score represented worse performance. We subtracted 100 from the score so that higher scores represented better control, and evaluated hospital readmissions rate, noticing a weakly positive signal (better HbA1c led to decrease readmission rates).
 
 
 \subsection[Unsupervised Learning]{Unsupervised Learning \\ \small{Notebook 3}} \label{meth_unsup}
@@ -74,6 +80,7 @@ After coverage filtering, we applied three data leakage guards: circular measure
 
 With the feature set settled, six measures are flagged in the source as inverse, where a higher raw value means worse performance. Their coefficients are sign adjusted at display time so that all results are expressed per one standard deviation of better performance. The county controls are beneficiary average age, percent female, percent white, percent Black, percent Hispanic, percent dual eligible for Medicaid, Medicare Advantage participation rate, and log beneficiary count, plus the primary care and advanced practice share of local providers and an indicator marking counties whose race shares are suppressed in the source. The MIPS increment is measured separately as the difference in cross-validated $R^2$ between models fitted with these county controls alone and with controls plus the 49 MIPS measures. We trained multiple supervised learning models on our data (LinearRegression, ElasticNetCV, RandomForestRegressor, and GradientBoostingRegressor) and used GroupKFold with \texttt{state} as our grouping variable to validate the models we trained. Finally, we compared the performance of different combinations of model, features, and targets to select the optimal combination.
 
+\newpage
 
 \section{Results}
 
@@ -163,6 +170,8 @@ Model residuals are spatially autocorrelated (Moran's I = +0.199, permutation $p
     \caption{The three surviving measures under three approaches to estimating uncertainty: state clustered standard errors, Conley spatial HAC, and census division clustering.}
     \label{fig:spatial_forest}
 \end{figure}
+
+\newpage
 
 \section{Discussion}
 % Translation
