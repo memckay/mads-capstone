@@ -1,8 +1,5 @@
-# Pinned data sources for the SIADS 699 capstone, so results reproduce byte-for-byte.
-# Download each dataset from its url into data/raw/ (gitignored) under the target
-# filename, then confirm the sha256 and row count below. That is the reproducibility gate.
-# fallback_url snapshots are on the team Google Drive and need a umich.edu login;
-# without UM access, use the public CMS/HUD url or landing page.
+# Pinned data sources. Download each dataset into data/raw/ under its target filename.
+# fallback_url copies are on the team Drive and need a umich.edu login.
 
 datasets:
   - name: group_mips_performance
@@ -55,16 +52,16 @@ reference_assets:
     target: raw/geojson-counties-fips.json
     sha256: "e540149b7525e71ee6b6cab6dea2a95205f11e0c3e7374d27a7c9c47ea96e8c0"
     expected_features: 3221
-    source: "plotly/datasets geojson-counties-fips.json (MIT licensed repository); boundaries are US Census derived, public domain."
-    note: "Committed (3.2 MB) so notebook 04 runs offline; it keeps a guarded download fallback that raises a clear error, not a traceback, if the file is missing and the fetch fails."
+    source: "plotly/datasets geojson-counties-fips.json, MIT licensed repository."
+    note: "Committed so notebook 04 runs offline, with a download fallback if the file is missing."
 
   - name: us_states_geojson
     description: State boundary polygons used only as a basemap overlay on the residual choropleth in notebook 04.
     target: raw/us-states.geojson
     sha256: "6f23ed91fce2c25d57c01d83225342ba40258e9571c486c3999bd827c80d193b"
     expected_features: 52
-    source: "Leaflet choropleth example (us-states.geojson); boundaries derived from US Census cartographic files."
-    note: "Committed (87 KB) for the notebook 04 choropleth. The overlay is decorative: if absent, the cell draws the map without state outlines."
+    source: "Leaflet choropleth example (us-states.geojson); GeoJSON credited by Leaflet to Mike Bostock."
+    note: "Committed for the notebook 04 choropleth. If absent, the map draws without state outlines."
 
 # Team-generated artifacts (from shared Drive; not raw sources).
 # Pinned here so everyone can confirm they model on the same bytes.
@@ -78,7 +75,7 @@ team_artifacts:
     content_sha256: "a0a05f4d59e65cbda8622c575db19cfa8503087f330b86946a3ad38787fd542c"
     gzip_sha256_drive_snapshot: "17ad5e1f1085138a035de0bc6a9bc5d74f8c61948555f8087e96d06253f462d2"   # CRLF, Windows-authored
     expected_rows: 1611053   # x 255 cols; filter YEAR==2023 before modeling
-    note: "county_fips is 5-digit zero-padded text. Rebuilt from notebook 02 and confirmed identical to the Drive snapshot after newline normalization."
+    note: "county_fips is 5-digit zero-padded text."
 
   - name: county_clusters
     description: KMeans (k=2) county cluster assignments from the 03_unsupervised_learning notebook (1,400 counties passing coverage filters).
