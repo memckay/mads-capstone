@@ -1,29 +1,26 @@
 # County Level MIPS Quality Scores: Coverage Limits and Association with Medicare Outcomes
 
-**Do Medicare quality scores still mean anything once you aggregate them to a county?** A supervised
-and unsupervised study using a county analytic frame of 2,507 US counties, finding that county level
-MIPS is too thinly reported to carry a reliable regional quality signal.
+Medicare's Merit-based Incentive Payment System (MIPS) scores physician groups on quality. This
+project asks whether those scores still carry meaningful information after they are aggregated to
+counties.
 
-Does county aggregated physician group quality, measured by Medicare's Merit-based Incentive Payment
-System (MIPS), relate to county level Medicare outcomes once county characteristics are accounted for?
-The primary outcome is the county 30 day all cause hospital readmission rate for 2023; standardized
-Medicare cost per capita is carried as a secondary outcome. MIPS is published for a single
-performance year, so our analysis is cross sectional rather than a forward looking panel.
+Across 2,507 US counties, the signal is limited. 69.2% of county measure cells rely on two or fewer
+reporting practices, and adding county MIPS measures to county controls improves cross validated R²
+by only +0.017 under Elastic Net. The analysis is a 2023 snapshot, with 30 day all cause hospital
+readmission as the primary outcome and standardized Medicare cost per capita as a secondary outcome.
 
 ---
 
 ## Findings
 
-County level MIPS aggregates appear too thin to carry a reliable regional quality signal. Two thirds
-of county measure cells rest on two or fewer reporting practices, and reporting indicators alone
-recover most of the gradient boosting gain from the MIPS scores.
+Reporting indicators alone recover most of the gradient boosting gain from the MIPS scores, so the
+models were substantially learning which counties participate rather than how well anyone performs.
 
 ![Cross validated R² for four models, each fitted with county controls only and again with controls plus MIPS. Gradient boosting gains the most at +0.020, Elastic Net +0.017, random forest +0.013, and linear OLS is negative at -0.009. Every model leaves most county readmission variance unexplained.](reports/figures/sl_delta_r2.png)
 
-Adding MIPS to county controls moves cross validated R² by **+0.017** under Elastic Net, the model
-whose gain is positive in all five held out folds. Gradient boosting gains more but in only two of
-five, and linear regression gets worse. Every model leaves most county readmission variance
-unexplained.
+Elastic Net is the model whose gain is positive in all five held out folds. Gradient boosting gains
+more but in only two of five, and linear regression gets worse. Every model leaves most county
+readmission variance unexplained.
 
 The increment thins further under scrutiny. A county's own prior year readmission rate largely
 absorbs it, which points to persistent county outcome patterns more than to MIPS performance in
