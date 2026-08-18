@@ -5,16 +5,17 @@ project asks whether those scores still carry meaningful information after they 
 counties.
 
 Across 2,507 US counties, the signal is limited. 69.2% of county measure cells rely on two or fewer
-reporting practices, and adding county MIPS measures to county controls improves cross validated R²
-by only +0.017 under Elastic Net. The analysis is a 2023 snapshot, with 30 day all cause hospital
+reporting practices, and adding county MIPS measures to county controls moves cross validated R² by
+only +0.017 under Elastic Net, a gain whose 95% interval runs from -0.000 to +0.035 and so is not
+clearly different from zero. The analysis is a 2023 snapshot, with 30 day all cause hospital
 readmission as the primary outcome and standardized Medicare cost per capita as a secondary outcome.
 
 ---
 
 ## Findings
 
-Reporting indicators alone recover most of the gradient boosting gain from the MIPS scores, so the
-models were substantially learning which counties participate rather than how well anyone performs.
+Reporting indicators alone recover most of what gradient boosting gains from the MIPS scores, which
+suggests it was using which measures a county reports at least as much as the scores themselves.
 
 ![Cross validated R² for four models, each fitted with county controls only and again with controls plus MIPS. Gradient boosting gains the most at +0.020, Elastic Net +0.017, random forest +0.013, and linear OLS is negative at -0.009. Every model leaves most county readmission variance unexplained.](reports/figures/sl_delta_r2.png)
 
@@ -22,21 +23,22 @@ Elastic Net is the model whose gain is positive in all five held out folds. Grad
 more but in only two of five, and linear regression gets worse. Every model leaves most county
 readmission variance unexplained.
 
-The increment thins further under scrutiny. A county's own prior year readmission rate largely
-absorbs it, which points to persistent county outcome patterns more than to MIPS performance in
-2023. Of the 16 measures reported widely enough to test, three survive multiple testing correction:
-diabetes HbA1c poor control, cervical cancer screening, and breast cancer screening. All three
-relate to primary care screening or chronic disease management, and better performance on each is
-associated with fewer readmissions.
+The increment thins further under scrutiny. On the 2,444 counties that have a 2022 readmission rate,
+the Elastic Net increment is +0.006 before that rate enters as a control and +0.002 after, which
+points to persistent county outcome patterns more than to MIPS performance in 2023. Of the 16
+measures reported widely enough to test, three survive multiple testing correction: diabetes HbA1c
+poor control, cervical cancer screening, and breast cancer screening. All three relate to primary
+care screening or chronic disease management, and better performance on each is associated with
+roughly 0.2 to 0.3 percentage points fewer readmissions per standard deviation.
 
-Clustering the same county profiles without any outcome data shows similarly weak structure. The
+Clustering the county MIPS profiles without any outcome data shows similarly weak structure. The
 profiles are high dimensional, requiring roughly 41 components to reach 90% of the variance, and the
 best silhouette is only around 0.10 at k = 2. The profiles sit on a continuum with weak separation
 between groups.
 
-**Scope.** This studies county aggregates, and it is silent on how MIPS performs at the individual
-practice level where the program operates. It reports associations; whether better MIPS performance
-causes fewer readmissions is a question this design cannot answer.
+**Scope.** This studies county aggregates, and it is not representative of how MIPS performs at the
+individual practice level where the program operates. It reports associations; whether better MIPS
+performance causes fewer readmissions is a question this design cannot answer.
 
 Details in [`04_supervised_learning`](notebooks/04_supervised_learning.ipynb) and
 [`03_unsupervised_learning`](notebooks/03_unsupervised_learning.ipynb).
