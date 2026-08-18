@@ -4,13 +4,14 @@
 \usepackage{float}
 \usepackage{multirow}
 \usepackage{booktabs}
+\usepackage{appendix}
 
 \usepackage[T1]{fontenc}
 \usepackage{palatino}
 
 \usepackage[margin=1in]{geometry} % adjust margins
 
-\title{SIADS 699 Capstone Report}
+\title{County Level MIPS Quality Scores: Coverage Limits and Association with Medicare Outcomes}
 \author{Transaint Gau, Maria Paz, Zachary Sletten, Justin Tseng}
 \date{August 18, 2026}
 
@@ -20,7 +21,7 @@
 
 \section{Abstract}
 % Project Statement
-Established by Centers for Medicare \& Medicaid Services, the \textbf{M}erit-based \textbf{I}ncentive \textbf{P}ayment \textbf{S}ystem (MIPS) is a system designed to transition Medicare clinicians towards a value-based care system \cite{Lin2025Merit-BasedYears}. Given the strong financial incentives present for clinicians to best mimic the behavior MIPS rewards, it is in Medicare users’ benefit for as strong a correlation between high MIPS scores and positive patient outcomes as possible. We downloaded three separate data files \cite{2023PYAttestations, 2026MedicareCounty, 2023DoctorsFile} to determine if MIPS predicts various patient outcomes. We combined all three files into one DataFrame using a series of left joins and data sanitization, then performed supervised and unsupervised learning analyses. After unsupervised and supervised machine learning analysis, our findings suggested that  it is difficult to use MIPS to predict performance based on minimal feature information, and almost all of the significant features must be considered. We also found that a small, borderline association exists that is robust to demographic/specialty controls (but is functionally absorbed by a county’s own prior-year readmission rate). Future work could include re-evaluation using different county and measure cutoffs or more granular population divisions.
+Established by Centers for Medicare \& Medicaid Services, the \textbf{M}erit-based \textbf{I}ncentive \textbf{P}ayment \textbf{S}ystem (MIPS) is a system designed to transition Medicare clinicians towards a value-based care system \cite{Lin2025Merit-BasedYears}. Given the strong financial incentives present for clinicians to best mimic the behavior MIPS rewards, it is in Medicare users’ benefit for as strong a correlation between high MIPS scores and positive patient outcomes as possible. We aim to explore whether MIPS is financially incentivizing physician behavior that creates better short- and long-term outcomes for patients. We downloaded three separate data files \cite{2023PYAttestations, 2026MedicareCounty, 2023DoctorsFile} to determine if MIPS predicts various patient outcomes. We combined all three files into one DataFrame using a series of left joins and data sanitization, then performed supervised and unsupervised learning analyses. After unsupervised and supervised machine learning analysis, our findings suggested that  it is difficult to use MIPS to predict performance based on minimal feature information, and almost all of the significant features must be considered. We also found that a small, borderline association exists that is robust to demographic/specialty controls (but is functionally absorbed by a county’s own prior-year readmission rate). Future work could include re-evaluation using different county and measure cutoffs or more granular population divisions.
 
 \section{Introduction}
 
@@ -29,7 +30,7 @@ Established by Centers for Medicare \& Medicaid Services, the \textbf{M}erit-bas
 
 MIPS data is available to the public and freely downloadable \cite{2023PYAttestations}, meaning evaluations of the system’s efficacy can be performed. Given the strong financial incentives present for clinicians to best mimic the behavior MIPS rewards, it is in Medicare users’ benefit for as strong a correlation between high MIPS scores and positive patient outcomes as possible. This is especially relevant as MIPS is designed to be a budget-neutral program \cite{Gettel2022TheSystem}, meaning that their reimbursement is affected not only by their performance, but by other physicians' performance as well (one physician's increase in funding is paid for by another's decrease).
 
-Furthermore, Lin et. al. state that "safety-net specialists did not achieve greater cumulative financial rewards due to MIPS's percentage-based adjustment structure, which disadvantages clinicians with smaller billing volumes" \cite{Lin2025Merit-BasedYears}. MIPS provides incentives for physicians to pursue certain kinds of treatments for their patients, but what if a patient needs treatment that MIPS doesn't reward? In essence, we aim to explore whether MIPS is financially incentivizing physician behavior that creates better short- and long-term outcomes for patients.
+Furthermore, Lin et. al. state that "safety-net specialists did not achieve greater cumulative financial rewards due to MIPS's percentage-based adjustment structure, which disadvantages clinicians with smaller billing volumes" \cite{Lin2025Merit-BasedYears}. MIPS provides incentives for physicians to pursue certain kinds of treatments for their patients, but what if a patient needs treatment that MIPS doesn't reward? Patients may require a certain treatment that their doctor isn't financially incentivized by MIPS to provide. In essence, we aim to explore whether MIPS is financially incentivizing physician behavior that creates better short- and long-term outcomes for patients.
 
 In order to measure MIPS, we utilized two other data sources. Our second source was a regional database of patient outcomes \cite{2026MedicareCounty}. This data source has multiple methods of measuring patient health outcomes, and provides a way for us to determine if there exists a strong correlation between those outcomes and MIPS scores. Our final source was a database of doctors and physicians enrolled with Medicare \cite{2023DoctorsFile}. This data source (referred to later as the "DAC") acts as the "bridge" between the first two data sources, allowing us to combine all three into one source for analysis.
 
@@ -75,8 +76,6 @@ Six measures are flagged in the source as inverse, where a higher raw value mean
 
 
 \section{Results}
-
-\subsection[Exploratory Data Analysis (EDA)]{Exploratory Data Analysis (EDA) \\ \small{Notebook 2}}
 
 \subsection[Unsupervised Learning]{Unsupervised Learning \\ \small{Notebook 3}}
 Of the 229 available MIPS measures, 55 had coverage in at least 30\% of counties. After applying the county coverage threshold, 1,400 of 2,955 counties reported at least 20\% of the retained measures and remained in the clustering dataset. Figure \ref{fig:meas_count} shows that coverage was uneven across both measures and counties, with substantial numbers falling below the selected thresholds.
@@ -165,12 +164,10 @@ Model residuals are spatially autocorrelated (Moran's I = +0.199, permutation $p
 
 \section{Discussion}
 % Translation
-\subsection[Exploratory Data Analysis (EDA)]{Exploratory Data Analysis (EDA) \\ \small{Notebook 2}}
-
 \subsection[Unsupervised Learning]{Unsupervised Learning \\ \small{Notebook 3}}
 Our PCA results showed that 41 principal components were required to explain 90\% of the variance across the 55 retained MIPS measures. This indicates that variation in county MIPS performance profiles is distributed across many dimensions rather than being concentrated in one or two dominant components. Consequently, MIPS performance profiles cannot be adequately characterized using only a small number of dimensions.
 
-The best K means solution occurred at $k = 2$, but its silhouette score of 0.096 was low. This indicates substantial overlap between the two clusters and suggests that counties do not form clearly separated MIPS performance archetypes. The clusters were also imbalanced, with 445 counties in one cluster and 955 in the other. Taken together with the PCA findings, these results suggest that county MIPS performance varies more along a multidimensional continuum than as a small number of clearly separable groups.
+The best K-means solution occurred at $k = 2$, but its silhouette score of 0.096 was low. This indicates substantial overlap between the two clusters and suggests that counties do not form clearly separated MIPS performance archetypes. The clusters were also imbalanced, with 445 counties in one cluster and 955 in the other. Taken together with the PCA findings, these results suggest that county MIPS performance varies more along a multidimensional continuum than as a small number of clearly separable groups.
 
 Despite the weak cluster separation, 28 of 44 Medicare geographic outcomes differed between the two MIPS derived clusters at an unadjusted $p < 0.05$ threshold. The strongest differences were observed in utilization and cost measures, including standardized payments for tests, home health payments, durable medical equipment costs, and FQHC/RHC visits. In contrast, acute clinical outcomes such as readmission and emergency room utilization showed weaker separation. These findings suggest that differences in county MIPS performance profiles are more closely associated with practice patterns and resource utilization than with patient level acute clinical events.
 
@@ -191,12 +188,18 @@ These are county level associations and they say nothing about MIPS at the indiv
 \end{figure}
 
 \subsection{Other}
+Ultimately, our findings suggest a weak correlation between MIPS and patient outcomes. Our best K-means solution had a weak silhouette score, and the clusters did not suggest any clear groupings in the data. Similarly, our supervised findings also did not find a strong correlation either. Our findings suggest that because MIPS is not strongly correlated with patient outcomes, physicians are not financially motivated by the MIPS system to prescribe treatments that are most appropriate for their patients. In order to better serve patients (both directly and indirectly), MIPS should be adjusted to better align with positive patient outcomes in order to better serve Medicare enrollees as a whole.
 
 \section{Future Work}
 % Broader Impacts
 While our findings did not suggest a strong correlation between MIPS and patient outcomes, there are still opportunities for future work. We could re-run our analysis with different county and measure cutoffs to see if the effects are similar. Another potential path for future work is more granular analysis (i.e., closer than the county level). Counties do not account for population density, so finding a more granular way to compare population centers could yield different results as well.
 
 Another area of future work is comparing MIPS to the prior system used for Medicare reimbursements. Apathy and Everson's study claims that the MIPS system's standards are easier to meet than the prior system in place, which results in higher financial reimbursements \cite{Apathy2020HighSystem}. If we use our analysis on older reimbursement data (and adjust for time-based factors like inflation), we could determine how much more financially motivated physicians are to use MIPS.
+
+
+\appendix
+
+\newpage
 
 \section{Statement of Work}
 % Statement of Work
@@ -208,12 +211,40 @@ Each team member contributed equally to the overall project. Each member also se
   \item Justin Tseng: Report Composition/Aggregation
 \end{itemize}
 
+\newpage
+
 \section{AI Usage Statement}
-Claude Code with Opus 4.8 was utilized throughout the supervised and unsupervised learning portion of the project as a development and review tool. It was first used to support understanding of MIPS terminology, program background, and concepts relevant to interpreting the data and analysis. ChatGPT Codex 0.147.0 was used to assist with understanding file library/dictionary, development and review tool as well.
 
-Previous project milestones were then provided as context so that established notebook organization, visual structure, and formatting conventions could be carried forward consistently. This reduced time spent recreating formatting and helped maintain a professional University of Michigan themed color palette with accessibility considerations incorporated into the visual design.
+\subsection{How AI fit into the workflow}
+We used AI as a development and review tool after the team set the analysis design, coverage thresholds, and model choices. It helped us with understanding MIPS terminology, code implementation, debugging, proofreading, and identifying possible gaps. All AI assisted content was evaluated by humans for accuracy, after which we chose to either accept, revise, or reject its proposals. Based on the decided outcome, we either returned to AI for revisions or used the accepted recommendations in our final deliverables. Figure \ref{fig:ai_workflow} demonstrates the process we used when using AI during our project.
 
-The tools also supported coding, debugging, proofreading within notebook cells, and review of the analysis for possible gaps or additional considerations.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\textwidth]{figures/ai_workflow_chart.png}
+    \caption{Diagram of AI workflow used in project.}
+    \label{fig:ai_workflow}
+\end{figure}
+
+\subsection{Models and settings}
+
+\begin{itemize}
+    \item ChatGPT Codex 0.147.0 (data loading and review)
+    \item Claude Code with Opus 4.8 (supervised learning)
+    \item Cursor with Opus 4.8 (unsupervised learning)
+\end{itemize}
+
+Temperature is not configurable in Claude Code. Reasoning effort was set to high for review and medium for smaller tasks.
+
+\subsection{Prompting and review}
+We used AI either for a specific task or to challenge the analysis. Prompts pointed to the relevant notebook, figure, or result. One example of a prompt we used is as follows:
+
+\begin{quote}
+Can you play devil’s advocate and review the analysis for methodological holes, weak assumptions, leakage, bias, or conclusions that may be overstated?
+\end{quote}
+
+AI suggestions were checked against the code and notebook outputs before being used.
+
+One example of an evaluation we used is as follows: AI suggested quoting gradient boosting because it had the largest MIPS increment (+0.020). We checked fold-level results: that gain was positive in only two of five held-out states, so we revised the AI suggestion and reported Elastic Net instead (+0.017, positive in all five).
 
 \newpage
 \bibliography{references.bib}
